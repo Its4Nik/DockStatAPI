@@ -19,7 +19,7 @@
     "mini": "bash ./src/misc/minifyDist.sh",
     "docker": "docker compose -f docker/docker-compose.yaml up -d && bash ./src/misc/.tmux.sh; docker compose -f docker/docker-compose.yaml down",
     "docker:build": "npm run build:docker && npm run docker",
-    "prettier": "npx prettier -c ./src/**/*.ts --parser typescript --write && npx prettier -c ./.github/workflows/*.yaml --parser yaml --write && npx prettier -c ./**/*.md --parser markdown --write && npx prettier -c ./**/*.json --parser json --write",
+    "prettier": "npx prettier -c ./__tests__/*.spec.ts --parser typescript --write && npx prettier -c ./src/**/*.ts --parser typescript --write && npx prettier -c ./.github/workflows/*.yaml --parser yaml --write && npx prettier -c ./**/*.md --parser markdown --write && npx prettier -c ./**/*.json --parser json --write",
     "lint": "npx eslint",
     "lint:fix": "npx eslint --fix",
     "license": "bash ./src/misc/credits.sh",

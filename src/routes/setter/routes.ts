@@ -77,7 +77,7 @@ router.put("/scheduler", (req: Request, res: Response) => {
  */
 router.delete("/removeHost", (req: Request, res: Response): void => {
   const ConfHandler = createConfHandler(req, res);
-  return ConfHandler.addHost(req);
+  return ConfHandler.removeHost(req);
 });
 
 export default router;

@@ -16,7 +16,7 @@ const version: string = VERSION || "unknown";
 const masterNode: string = HA_MASTER === "true" ? "✓" : "✗";
 const unsafeSync: string = HA_UNSAFE === "true" ? "✓" : "✗";
 
-function writeUserConf() {
+function writeUserConf(port: number) {
   let previousConfig = null;
   let shouldRewriteConfig = false;
 
@@ -72,6 +72,8 @@ function writeUserConf() {
   logger.info(`Master node : ${masterNode}`);
   logger.info(`Unsafe sync : ${unsafeSync}`);
   logger.info(`Proxies     : ${TRUSTED_PROXYS}`);
+  logger.info(`Server      : http://localhost:${port}`);
+  logger.info(`Swagger-UI  : http://localhost:${port}/api-docs`);
   logger.info("-----------------------------------------");
 }
 

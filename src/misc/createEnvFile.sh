@@ -33,4 +33,4 @@ echo -n "\
     \"WHATSAPP_API_URL\": \"${WHATSAPP_API_URL}\",
     \"WHATSAPP_RECIPIENT\": \"${WHATSAPP_RECIPIENT}\"
 } \
-" > /api/src/data/variables.json
+" > /api/src/data/variables.json || exit 1

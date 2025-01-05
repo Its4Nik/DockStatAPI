@@ -3,7 +3,7 @@
     "resolveJsonModule": true,
     "target": "ES2020",
     "outDir": "dist/src",
-    "module": "CommonJS",
+    "module": "AMD",
     "moduleResolution": "node",
     "strict": true,
     "skipLibCheck": true,
@@ -12,6 +12,6 @@
   },
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Recommended",
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "**/*.d.ts", "__tests__/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

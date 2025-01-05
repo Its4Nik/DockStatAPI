@@ -27,7 +27,10 @@ class NotificationHandler {
         if (error) {
           return ResponseHandler.error(error as string, 400);
         }
-        return ResponseHandler.rawData(data, "Fetched notification template");
+        return ResponseHandler.rawData(
+          JSON.parse(data),
+          "Fetched notification template",
+        );
       });
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);

@@ -1,6 +1,6 @@
 # custom paths:
 src/data/*
-
+.tmp
 docker/master
 docker/slave
 .test*

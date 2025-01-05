@@ -56,7 +56,7 @@ class AuthenticationHandler {
       const isPasswordValid = await bcrypt.compare(password, storedData.hash);
 
       if (!isPasswordValid) {
-        return ResponseHandler.error("Invalid password", 401);
+        return ResponseHandler.error("Invalid password", 402);
       }
 
       await setFalse();

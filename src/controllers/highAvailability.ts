@@ -118,8 +118,9 @@ async function prepareFilesForSync(): Promise<Record<string, string>> {
       const content = await fs.promises.readFile(filePath, "utf-8");
       fileData[filePath] = content;
     }
-  } catch (error) {
-    logger.error(`Error preparing files for sync: ${(error as Error).message}`);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
   return fileData;
 }

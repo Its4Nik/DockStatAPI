@@ -20,7 +20,7 @@ class ConfHandler {
     try {
       const { name, url, port } = req.query as unknown as target;
       if (!name || !url || !port) {
-        return ResponseHandler.denied("Name, Port, and URL are required.");
+        return ResponseHandler.error("Name, Port, and URL are required.", 400);
       }
 
       const config: dockerConfig = JSON.parse(
@@ -28,7 +28,7 @@ class ConfHandler {
       );
 
       if (config.hosts.some((host) => host.name === name)) {
-        return ResponseHandler.denied("Host already exists.");
+        return ResponseHandler.error("Host already exists.", 401);
       }
 
       config.hosts.push({ name, url, port });
@@ -47,7 +47,7 @@ class ConfHandler {
       const hostName = req.query.hostName as string;
 
       if (!hostName) {
-        return ResponseHandler.denied("Host name is required.");
+        return ResponseHandler.error("Host name is required.", 401);
       }
 
       const currentState = fs.readFileSync(configPath, "utf-8");
@@ -79,8 +79,9 @@ class ConfHandler {
       const newInterval = parseInterval(interval);
 
       if (newInterval < 5 * 60 * 1000 || newInterval > 6 * 60 * 60 * 1000) {
-        return ResponseHandler.denied(
+        return ResponseHandler.error(
           "Interval must be between 5 minutes and 6 hours.",
+          401,
         );
       }
 

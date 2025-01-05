@@ -62,6 +62,10 @@ class ApiHandler {
       const version = await docker.version();
       const relevantData = extractRelevantData({ hostName, info, version });
 
+      if (!relevantData) {
+        ResponseHandler.error("No host found", 404);
+      }
+
       return ResponseHandler.rawData(relevantData, "Fetched Host stats");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);

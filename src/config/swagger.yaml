@@ -1,0 +1,63 @@
+openapi: "3.0.0"
+info:
+  title: "DockStatAPI"
+  version: "2.0.1"
+  externalDocs:
+    description: DockStat(API) Wiki
+    url: https://outline.itsnik.de/s/dockstat
+  license:
+    name: BSD-3-Clause
+    url: https://github.com/Its4Nik/dockstatapi/tree/main?tab=BSD-3-Clause-1-ov-file#readme
+  description: |-
+    ![DockStat](https://github.com/Its4Nik/dockstatapi/blob/dev/.github/DockStat-dark.png?raw=true)
+
+    # Latest Pipelines
+
+    [![Docker Image CI](https://img.shields.io/github/actions/workflow/status/Its4Nik/dockstatapi/build-image.yml?branch=main&label=Docker%20Image%20CI&style=for-the-badge&logo=docker)](https://github.com/Its4Nik/dockstatapi/actions/workflows/build-image.yml)
+    [![Validation](https://img.shields.io/github/actions/workflow/status/Its4Nik/dockstatapi/validation.yml?branch=dev&label=Validation&style=for-the-badge&logo=checkmarx)](https://github.com/Its4Nik/dockstatapi/actions/workflows/validation.yml)
+
+    # Feature List:
+
+    - Swagger API Documentation
+    - Database (Keeps data for 24 hours max)
+    - Advanced authentication using hashes and salt
+    - `http` API to configure the backend
+    - Multi-arch docker builds (using buildx github action)
+    - Advanced security through middlewares: rate-limiting and authentication
+    - Multi Arch Docker builds through docker buildx
+    - High Availability using single master and unlimited worker nodes!
+
+    # 🔗 DockStatAPI v2 Documentation
+
+    _⚠️ = Deprecation warning_
+
+    - [Introduction](https://outline.itsnik.de/s/dockstat)
+
+    - [DockstatAPI v2](https://outline.itsnik.de/s/dockstat/doc/dockstatapi-v2-XRMDKRqMIg)
+
+      - [API reference](https://outline.itsnik.de/s/dockstat/doc/api-reference-1PTxqx1MQ6)
+      - [How dependency graphs are made](https://outline.itsnik.de/s/dockstat/doc/how-the-dependecy-graphs-are-made-svuZbEHH9g)
+
+    - [DockStat v1](https://outline.itsnik.de/s/dockstat/doc/dockstat-v1-zVaFS4zROI)
+
+      - [⚠️ Customisation](https://outline.itsnik.de/s/dockstat/doc/customization-PiBz4OpQIZ)
+          - [⚠️ Themes](https://outline.itsnik.de/s/dockstat/doc/themes-BFhN6ZBbYx)
+      - [⚠️ Installation](https://outline.itsnik.de/s/dockstat/doc/installation-DaO99bB86q)
+
+    - [⚠️ DockStatAPI v1](https://outline.itsnik.de/s/dockstat/doc/dockstatapi-v1-jLcVCfPNmS)
+        - [⚠️ Integrations](https://outline.itsnik.de/s/dockstat/doc/integrations-Agq1oL6HxF)
+        - [⚠️ Backend API reference](https://outline.itsnik.de/s/dockstat/doc/backend-api-reference-YzcBbDvY33)
+
+tags:
+  - name: Authentication
+    description: Routes to setup / configure authentication
+  - name: Frontend Configuration
+    description: Backend routes to configure the integrated "frontend service"
+  - name: Miscellaneous
+    description: Some "random" routes which still can be useful
+  - name: Configuring
+    description: Configuring the backend
+
+servers:
+  - url: http://localhost:9876
+    description: "Your DockStatAPI instance"

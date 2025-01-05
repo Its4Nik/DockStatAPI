@@ -15,3 +15,4 @@
 - [x] Update logging => Better errors
 - [x] Update json responses
 - [ ] Swagger update
+- [ ] Edge case testing

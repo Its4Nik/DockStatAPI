@@ -459,7 +459,7 @@ paths:
         - "Configuration"
       summary: Shows the current configured schedule (for fetching data) in seconds
       operationId: getSchedule
-      respones:
+      responses:
         "200":
           description: Succes - Fetched schedule
         "402":

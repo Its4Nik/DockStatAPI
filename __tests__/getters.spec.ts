@@ -20,9 +20,8 @@ describe("Get endpoints", () => {
       expect(Array.isArray(hosts)).toBe(true);
       expect(hosts.length).toBeGreaterThan(0);
       expect(typeof hosts[0]).toBe("string");
+      PreviousResponse.set(hosts[0]);
     }
-
-    PreviousResponse.set(hosts[0]);
   });
 
   it("GET /api/host/:host/stats", async () => {

@@ -64,6 +64,7 @@ function writeUserConf(port: number) {
 
   logger.info("-----------------------------------------");
   logger.info(`Starting at : ${startDetails.startedAt}`);
+  logger.info(`Running env : ${process.env.NODE_ENV}`);
   logger.info(`Version     : ${startDetails.backendVersion}`);
   logger.info(`Docker      : ${installationDetails.inDocker}`);
   logger.info(`Running as  : ${installationDetails.installedBy}`);
@@ -73,7 +74,9 @@ function writeUserConf(port: number) {
   logger.info(`Unsafe sync : ${unsafeSync}`);
   logger.info(`Proxies     : ${TRUSTED_PROXYS}`);
   logger.info(`Server      : http://localhost:${port}`);
-  logger.info(`Swagger-UI  : http://localhost:${port}/api-docs`);
+  if (process.env.NODE_ENV !== "production") {
+    logger.info(`Swagger-UI  : http://localhost:${port}/api-docs`);
+  }
   logger.info("-----------------------------------------");
 }
 

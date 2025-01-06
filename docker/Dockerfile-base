@@ -38,8 +38,9 @@ RUN apk add --no-cache bash curl && \
 HEALTHCHECK --interval=5m --timeout=3s \
     CMD curl -f http://localhost:9876/api/status || exit 1
 
-COPY --chown=dockstatapi:dockstatapi --from=builder /app/dist/src /api/src
+COPY --chown=dockstatapi:dockstatapi --from=builder /app/dist/ /api/src
 COPY --chown=dockstatapi:dockstatapi --from=builder /app/package*.json /api/
+COPY --chown=dockstatapi:dockstatapi --from=builder /app/src/config/swagger.yaml /api/src/config/swagger.yaml
 
 RUN export npm_config_cache=$(mktemp -d) && \
     npm install --omit=dev && \
@@ -56,4 +57,4 @@ RUN chmod -R 777 /api/src/data /api && \
 
 STOPSIGNAL 130
 USER dockstatapi
-ENTRYPOINT [ "bash", "./entrypoint.sh" ]
+ENTRYPOINT [ "bash", "./entrypoint.sh", "--prod" ]

@@ -4,6 +4,7 @@ import logger from "../utils/logger";
 import fs from "fs";
 import { atomicWrite } from "../utils/atomicWrite";
 const filePath = "./src/data/states.json";
+import { generateGraphImage } from "../handlers/graph";
 
 let previousState: { [key: string]: string } = {};
 

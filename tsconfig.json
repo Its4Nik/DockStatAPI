@@ -2,8 +2,8 @@
   "compilerOptions": {
     "resolveJsonModule": true,
     "target": "ES2020",
-    "outDir": "dist",
-    "module": "CommonJS",
+    "outDir": "dist/src",
+    "module": "AMD",
     "moduleResolution": "node",
     "strict": true,
     "skipLibCheck": true,

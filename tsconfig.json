@@ -3,7 +3,7 @@
     "resolveJsonModule": true,
     "target": "ES2020",
     "outDir": "dist/src",
-    "module": "AMD",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "strict": true,
     "skipLibCheck": true,

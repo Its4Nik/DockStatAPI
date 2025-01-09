@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-FROM node:alpine AS builder
+FROM node:20-alpine AS builder
 
 LABEL maintainer="https://github.com/its4nik"
 LABEL version="2.0.1"
@@ -27,7 +27,7 @@ RUN mv ./src/sample-variable.json ./src/data/variables.json
 RUN npm run build
 
 # Stage 2: Production stage
-FROM node:alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /api
 

@@ -11,6 +11,7 @@
     "start": "npm run local-env-file && NODE_ENV=production tsx src/server.ts",
     "start:build": "npm run local-env-file -d && npm run build && NODE_ENV=production node dist/src/src/server.js",
     "dev": "npm run local-env-file && NODE_ENV=development nodemon",
+    "dev:socket": "docker compose -f docker/docker-compose.dev.yaml up -d && npm run local-env-file && NODE_ENV=development nodemon ; docker compose -f docker/docker-compose.dev.yaml down",
     "dev:trace": "npm run local-env-file && NODE_ENV=development nodemon --trace-uncaught --trace-warnings",
     "dep": "bash ./src/misc/dependencyGraphs/createDependencyGraph.sh",
     "dep:remove": "bash ./src/misc/removeUnusedDeps.sh && npm run dep",

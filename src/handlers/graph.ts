@@ -1,11 +1,44 @@
 import cytoscape from "cytoscape";
 import logger from "../utils/logger";
-import { AllContainerData, ContainerData } from "./../typings/dockerConfig";
+import { AllContainerData, ContainerData, dockerConfig, target } from "./../typings/dockerConfig";
 import { atomicWrite } from "../utils/atomicWrite";
+import { HA_MASTER_IP } from "../config/variables";
+import fs from "fs";
 
+const dockerConfigPath = "./src/data/dockerConfig.json"
 const CACHE_DIR_JSON = "./src/data/graph.json";
 const CACHE_DIR_HTML = "./src/data/graph.html";
 const CACHE_DIR_RES = "/src/data/graph.html";
+
+function isMaster(targetName: string): boolean {
+  try {
+    const ip = HA_MASTER_IP;
+
+    if (!ip) {
+      return false;
+    }
+
+    const config: dockerConfig = JSON.parse(fs.readFileSync(dockerConfigPath, "utf-8"));
+    const target = config.hosts.find((host) => host.name === targetName);
+
+    if (!target) {
+      logger.error(`Host with name "${targetName}" not found in dockerConfig.`);
+      return false;
+    }
+
+    const targetIp = JSON.stringify(target.url).replace(/"/g, '');
+
+    if (targetIp == ip) {
+      return true;
+    } else {
+      return false;
+    }
+
+  } catch (error) {
+    logger.error("Error reading dockerConfig.json:", error);
+    return false;
+  }
+}
 
 async function generateGraphFiles(
   allContainerData: AllContainerData,
@@ -15,13 +48,22 @@ async function generateGraphFiles(
     const graphElements: cytoscape.ElementDefinition[] = [];
 
     for (const [hostName, containers] of Object.entries(allContainerData)) {
+      let serverType = "";
+      if (isMaster(hostName)) {
+        logger.debug(`${hostName} is a master`)
+        serverType = "master";
+      } else {
+        logger.debug(`${hostName} is a node`)
+        serverType = "server";
+      }
+
       if ("error" in containers) {
         // TODO: make error'ed hosts better
         graphElements.push({
           data: {
             id: hostName,
             label: `Host: ${hostName} Error: ${containers.error}`,
-            type: "server",
+            type: serverType,
           },
         });
       } else {
@@ -32,7 +74,7 @@ async function generateGraphFiles(
           data: {
             id: hostName,
             label: `${hostName} - ${containerList.length} Containers`,
-            type: "server",
+            type: serverType,
           },
         });
 
@@ -90,24 +132,32 @@ async function generateGraphFiles(
           cy.style()
             .selector("node")
             .style({
-              label: "data(label)",
-              "background-color": "#0074D9",
-              "text-valign": "bottom", // Vertical alignment to the center
-              "text-halign": "center", // Horizontal alignment to the center
-              "color": "#000000",
-              "text-margin-y": 10,
-              "background-image": (ele) =>
-                ele.data("type") === "server"
-                  ? "server-icon.svg"
-                  : "container-icon.svg",
-              "background-fit": "contain",
-              "background-clip": "none",
-              "background-opacity": 0,
-              width: 70,  // Adjust the width for more room
-              height: 70, // Adjust the height for more room
-              "font-size": 15,  // Adjust font size to avoid cutting off text
-            })
-            .update();
+      label: "data(label)",
+      "background-color": "#0074D9",
+      "text-valign": "bottom", // Vertical alignment to the center
+      "text-halign": "center", // Horizontal alignment to the center
+      "color": "#000000",
+      "text-margin-y": 10,
+      "background-image": (ele) => {
+        let iconName = "container-icon.svg"; // Default icon
+        switch (ele.data("type")) {
+          case "server":
+            iconName = "server-icon.svg";
+            break;
+          case "master":
+            iconName = "dockstatapi-icon.svg";
+            break;
+        }
+        return \`url(\${ iconName })\`; // Return the icon path
+      },
+      "background-fit": "contain",
+      "background-clip": "none",
+      "background-opacity": 0,
+      width: 70,  // Adjust the width for more room
+      height: 70, // Adjust the height for more room
+      "font-size": 15,  // Adjust font size to avoid cutting off text
+    })
+    .update();
 
           cy.style()
               .selector("edge")

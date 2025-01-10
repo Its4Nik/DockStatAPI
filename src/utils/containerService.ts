@@ -61,7 +61,7 @@ async function fetchAllContainers(): Promise<AllContainerData> {
             const cpuUsage =
               systemCpuDelta > 0
                 ? (cpuDelta / systemCpuDelta) *
-                  containerStats.cpu_stats.online_cpus
+                containerStats.cpu_stats.online_cpus
                 : 0;
 
             return {

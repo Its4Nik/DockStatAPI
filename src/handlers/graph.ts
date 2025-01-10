@@ -3,11 +3,26 @@ import logger from "../utils/logger";
 import hexRgb from "hex-rgb";
 import { AllContainerData, ContainerData } from "./../typings/dockerConfig";
 import { atomicWrite } from "../utils/atomicWrite";
+import { rateLimitedReadFile } from "../utils/rateLimitFS";
 import puppeteer from "puppeteer";
 
 const CACHE_DIR_JSON = "./src/data/graph.json";
 const CACHE_DIR_HTML = "./src/data/graph.html";
+const _assets = "./src/utils/assets";
+const serverSvg = `${_assets}/server-icon.svg`;
+const containerSvg = `${_assets}/container-icon.svg`;
 const pngPath = "./src/data/graph.png";
+
+async function getPathData(path: string) {
+  try {
+    const data = await rateLimitedReadFile(path);
+    return data;
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
+    return false;
+  }
+}
 
 function hexToRgb(str: string) {
   const hexTest = /#[a-f\d]{3,6}/gim;
@@ -32,8 +47,8 @@ async function renderGraphToImage(
   });
   const page = await browser.newPage();
   await page.setContent(replacedHTML, { waitUntil: "networkidle0" });
+  //await page.waitForNavigation({ waitUntil: "load" });
   await page.waitForSelector("#cy", { visible: true });
-
   await page.waitForFunction(
     () => {
       const cyContainer = document.querySelector("#cy");
@@ -142,16 +157,16 @@ async function generateGraphFiles(
       "color": "#000000",
       "text-margin-y": 10,
       "background-image": (ele) => {
-        let iconName = "container-icon.svg"; // Default icon
+        let iconData = "";
         switch (ele.data("type")) {
           case "server":
-            iconName = "server-icon.svg";
+            iconData = encodeURIComponent(\`${await getPathData(serverSvg)}\`);
             break;
-          case "master":
-            iconName = "dockstatapi-icon.svg";
+          default:
+            iconData = encodeURIComponent(\`${await getPathData(containerSvg)}\`);
             break;
         }
-        return \`url(\${ iconName })\`; // Return the icon path
+        return \`url("data:image/svg+xml,\${iconData}")\`; // Return the SVG as a data URL
       },
       "background-fit": "contain",
       "background-clip": "none",

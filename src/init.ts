@@ -24,7 +24,6 @@ const initializeApp = (app: express.Application): void => {
   initFiles();
   app.use(cors());
   app.use(express.json());
-  app.use(express.static("./src/utils/assets"));
 
   if (process.env.NODE_ENV !== "production") {
     app.use("/api-docs", (req: Request, res: Response, next: NextFunction) =>

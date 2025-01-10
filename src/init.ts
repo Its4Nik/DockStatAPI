@@ -7,6 +7,7 @@ import frontend from "./routes/frontendController/routes";
 import api from "./routes/getter/routes";
 import notificationService from "./routes/notifications/routes";
 import conf from "./routes/setter/routes";
+import graph from "./routes/graphs/routes";
 import authMiddleware from "./middleware/authMiddleware";
 import ha from "./routes/highavailability/routes";
 import trustedProxies from "./controllers/proxy";
@@ -42,6 +43,7 @@ const initializeApp = (app: express.Application): void => {
   app.use("/auth", LAB, auth);
   app.use("/data", LAB, data);
   app.use("/frontend", LAB, frontend);
+  app.use("/graph", LAB, graph);
   app.use("/notification-service", LAB, notificationService);
   app.use("/ha", limiter, authMiddleware, ha);
 

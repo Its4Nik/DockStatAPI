@@ -5,6 +5,7 @@ import fs from "fs";
 import { atomicWrite } from "./atomicWrite";
 const configPath = "./src/data/dockerConfig.json";
 import { AllContainerData, HostConfig } from "../typings/dockerConfig";
+import { generateGraphFiles } from "../handlers/graph";
 
 function loadConfig() {
   try {
@@ -108,6 +109,7 @@ async function fetchAllContainers(): Promise<AllContainerData> {
     }
   }
 
+  generateGraphFiles(allContainerData);
   return allContainerData;
 }
 

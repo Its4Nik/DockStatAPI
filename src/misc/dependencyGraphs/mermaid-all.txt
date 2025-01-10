@@ -14,7 +14,7 @@ A["scheduler.ts"]
 C["fetchData.ts"]
 N["auth.ts"]
 U["frontendConfiguration.ts"]
-11["highAvailability.ts"]
+14["highAvailability.ts"]
 end
 subgraph 8["data"]
 9["variables.json"]
@@ -30,9 +30,10 @@ M["auth.ts"]
 Q["data.ts"]
 T["frontend.ts"]
 X["api.ts"]
-10["ha.ts"]
-16["notification.ts"]
-19["conf.ts"]
+10["graph.ts"]
+13["ha.ts"]
+19["notification.ts"]
+1C["conf.ts"]
 end
 subgraph J["routes"]
 subgraph K["auth"]
@@ -47,18 +48,21 @@ end
 subgraph V["getter"]
 W["routes.ts"]
 end
-subgraph Y["highavailability"]
+subgraph Y["graphs"]
 Z["routes.ts"]
 end
-subgraph 14["notifications"]
-15["routes.ts"]
+subgraph 11["highavailability"]
+12["routes.ts"]
 end
-subgraph 17["setter"]
+subgraph 17["notifications"]
 18["routes.ts"]
 end
+subgraph 1A["setter"]
+1B["routes.ts"]
 end
-subgraph 12["typings"]
-13["ha.ts"]
+end
+subgraph 15["typings"]
+16["ha.ts"]
 end
 end
 1-->2
@@ -73,8 +77,9 @@ end
 2-->S
 2-->W
 2-->Z
-2-->15
+2-->12
 2-->18
+2-->1B
 6-->7
 7-->9
 A-->B
@@ -95,12 +100,14 @@ W-->X
 X-->A
 X-->G
 Z-->10
-10-->11
-10-->G
-11-->7
-11-->13
-15-->16
-16-->G
+Z-->G
+12-->13
+13-->14
+13-->G
+14-->7
+14-->16
 18-->19
-19-->A
 19-->G
+1B-->1C
+1C-->A
+1C-->G

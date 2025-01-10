@@ -28,7 +28,6 @@ This file shows all npm packages used in DockStatAPI (also Dev packages)
 | detect-libc@2.0.3                    | https://github.com/lovell/detect-libc                         | Lovell Fuller     |
 | docker-modem@5.0.3                   | https://github.com/apocas/docker-modem                        | Pedro Dias        |
 | dockerode@4.0.2                      | https://github.com/apocas/dockerode                           | Pedro Dias        |
-| doctrine@3.0.0                       | https://github.com/eslint/doctrine                            | N/A               |
 | ejs@3.1.10                           | https://github.com/mde/ejs                                    | Matthew Eernisse  |
 | eslint-visitor-keys@3.4.3            | https://github.com/eslint/eslint-visitor-keys                 | Toru Nagashima    |
 | eslint-visitor-keys@4.2.0            | https://github.com/eslint/js                                  | Toru Nagashima    |

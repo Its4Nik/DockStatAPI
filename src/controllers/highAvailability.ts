@@ -228,12 +228,12 @@ async function startMasterNode() {
 
       const nodeCache: NodeCache = HA_NODE
         ? HA_NODE.split(",").reduce((cache, node, index) => {
-          const [ip, port] = node.trim().split(":");
-          if (ip && port) {
-            cache[`node-${index + 1}`] = { ip, port: parseInt(port, 10) };
-          }
-          return cache;
-        }, {} as NodeCache)
+            const [ip, port] = node.trim().split(":");
+            if (ip && port) {
+              cache[`node-${index + 1}`] = { ip, port: parseInt(port, 10) };
+            }
+            return cache;
+          }, {} as NodeCache)
         : {};
 
       logger.debug("Writing HA-Config(s)");

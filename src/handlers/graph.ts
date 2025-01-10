@@ -1,11 +1,56 @@
 import cytoscape from "cytoscape";
 import logger from "../utils/logger";
+import hexRgb from "hex-rgb";
 import { AllContainerData, ContainerData } from "./../typings/dockerConfig";
 import { atomicWrite } from "../utils/atomicWrite";
+import puppeteer from "puppeteer";
 
 const CACHE_DIR_JSON = "./src/data/graph.json";
 const CACHE_DIR_HTML = "./src/data/graph.html";
-const CACHE_DIR_RES = "/src/data/graph.html";
+const pngPath = "./src/data/graph.png";
+
+function hexToRgb(str: string) {
+  const hexTest = /#[a-f\d]{3,6}/gim;
+  return str.replace(hexTest, (hexColor) => {
+    const { red, green, blue } = hexRgb(hexColor);
+    return `rgb(${red}, ${green}, ${blue})`;
+  });
+}
+
+async function renderGraphToImage(
+  htmlContent: string,
+  outputImagePath: string,
+): Promise<void> {
+  const replacedHTML = hexToRgb(htmlContent);
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: [`--window-size=1920,1080`],
+    defaultViewport: {
+      width: 1920,
+      height: 1080,
+    },
+  });
+  const page = await browser.newPage();
+  await page.setContent(replacedHTML, { waitUntil: "networkidle0" });
+  await page.waitForSelector("#cy", { visible: true });
+
+  await page.waitForFunction(
+    () => {
+      const cyContainer = document.querySelector("#cy");
+      return cyContainer && cyContainer.children.length > 0;
+    },
+    { timeout: 10000 },
+  );
+
+  await page.screenshot({
+    path: outputImagePath,
+    type: outputImagePath.endsWith(".jpg") ? "jpeg" : "png",
+    fullPage: true,
+  });
+
+  await browser.close();
+  logger.info(`Graph rendered and image saved to: ${outputImagePath}`);
+}
 
 async function generateGraphFiles(
   allContainerData: AllContainerData,
@@ -152,6 +197,9 @@ async function generateGraphFiles(
     `;
 
     atomicWrite(CACHE_DIR_HTML, htmlContent);
+    await renderGraphToImage(htmlContent, pngPath)
+      .then(() => logger.debug("HTML converted to image successfully!"))
+      .catch((err) => logger.error("Error:", err));
 
     logger.info("generateGraphFiles <<< Files generated successfully");
     return true;
@@ -163,7 +211,7 @@ async function generateGraphFiles(
 }
 
 function getGraphFilePaths() {
-  return { json: CACHE_DIR_JSON, html: CACHE_DIR_HTML, res: CACHE_DIR_RES };
+  return { json: CACHE_DIR_JSON, html: CACHE_DIR_HTML };
 }
 
 export { generateGraphFiles, getGraphFilePaths };

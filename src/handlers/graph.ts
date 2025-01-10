@@ -1,6 +1,5 @@
 import cytoscape from "cytoscape";
 import logger from "../utils/logger";
-import hexRgb from "hex-rgb";
 import { AllContainerData, ContainerData } from "./../typings/dockerConfig";
 import { atomicWrite } from "../utils/atomicWrite";
 import { rateLimitedReadFile } from "../utils/rateLimitFS";
@@ -24,19 +23,10 @@ async function getPathData(path: string) {
   }
 }
 
-function hexToRgb(str: string) {
-  const hexTest = /#[a-f\d]{3,6}/gim;
-  return str.replace(hexTest, (hexColor) => {
-    const { red, green, blue } = hexRgb(hexColor);
-    return `rgb(${red}, ${green}, ${blue})`;
-  });
-}
-
 async function renderGraphToImage(
   htmlContent: string,
   outputImagePath: string,
 ): Promise<void> {
-  const replacedHTML = hexToRgb(htmlContent);
   const browser = await puppeteer.launch({
     headless: true,
     args: [`--window-size=1920,1080`],
@@ -46,7 +36,7 @@ async function renderGraphToImage(
     },
   });
   const page = await browser.newPage();
-  await page.setContent(replacedHTML, { waitUntil: "networkidle0" });
+  await page.setContent(htmlContent, { waitUntil: "networkidle0" });
   //await page.waitForNavigation({ waitUntil: "load" });
   await page.waitForSelector("#cy", { visible: true });
   await page.waitForFunction(

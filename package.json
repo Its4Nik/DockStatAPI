@@ -40,7 +40,6 @@
     "dockerode": "^4.0.2",
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
-    "hex-rgb": "^5.0.0",
     "https": "^1.0.0",
     "ipaddr.js": "^2.2.0",
     "nodemailer": "^6.9.16",

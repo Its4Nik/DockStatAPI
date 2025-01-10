@@ -59,6 +59,7 @@
     "@types/express-handlebars": "^5.3.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.0",
+    "@types/node-fetch": "^2.6.12",
     "@types/nodemailer": "^6.4.17",
     "@types/supertest": "^6.0.2",
     "@types/supports-color": "^8.1.3",

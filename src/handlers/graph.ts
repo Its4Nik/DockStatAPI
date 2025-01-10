@@ -1,16 +1,35 @@
 import cytoscape from "cytoscape";
 import logger from "../utils/logger";
-import { AllContainerData, ContainerData, dockerConfig, target } from "./../typings/dockerConfig";
+import {
+  AllContainerData,
+  ContainerData,
+  dockerConfig,
+} from "./../typings/dockerConfig";
 import { atomicWrite } from "../utils/atomicWrite";
 import { HA_MASTER_IP } from "../config/variables";
 import fs from "fs";
+import fetch from "node-fetch";
 
-const dockerConfigPath = "./src/data/dockerConfig.json"
+const dockerConfigPath = "./src/data/dockerConfig.json";
 const CACHE_DIR_JSON = "./src/data/graph.json";
 const CACHE_DIR_HTML = "./src/data/graph.html";
 const CACHE_DIR_RES = "/src/data/graph.html";
 
-function isMaster(targetName: string): boolean {
+async function checkMaster(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok)
+      throw new Error(`Failed to fetch: ${response.statusText}`);
+
+    const data = await response.json();
+    return data.master === true;
+  } catch (error) {
+    console.error("Error:", error);
+    return false;
+  }
+}
+
+async function isMaster(targetName: string): Promise<boolean> {
   try {
     const ip = HA_MASTER_IP;
 
@@ -18,7 +37,9 @@ function isMaster(targetName: string): boolean {
       return false;
     }
 
-    const config: dockerConfig = JSON.parse(fs.readFileSync(dockerConfigPath, "utf-8"));
+    const config: dockerConfig = JSON.parse(
+      fs.readFileSync(dockerConfigPath, "utf-8"),
+    );
     const target = config.hosts.find((host) => host.name === targetName);
 
     if (!target) {
@@ -26,14 +47,11 @@ function isMaster(targetName: string): boolean {
       return false;
     }
 
-    const targetIp = JSON.stringify(target.url).replace(/"/g, '');
+    const targetIp = JSON.stringify(target.url).replace(/"/g, "");
+    const targetPort = JSON.stringify(target.port).replace(/"/g, "");
+    const url = `${targetIp}:${targetPort}/ha/config`;
 
-    if (targetIp == ip) {
-      return true;
-    } else {
-      return false;
-    }
-
+    return await checkMaster(url);
   } catch (error) {
     logger.error("Error reading dockerConfig.json:", error);
     return false;
@@ -44,16 +62,16 @@ async function generateGraphFiles(
   allContainerData: AllContainerData,
 ): Promise<boolean> {
   try {
-    logger.debug("generateGraphFiles >>> Starting generation");
+    logger.info("generateGraphFiles >>> Starting generation");
     const graphElements: cytoscape.ElementDefinition[] = [];
 
     for (const [hostName, containers] of Object.entries(allContainerData)) {
       let serverType = "";
-      if (isMaster(hostName)) {
-        logger.debug(`${hostName} is a master`)
+      if (await isMaster(hostName)) {
+        logger.debug(`${hostName} is a master`);
         serverType = "master";
       } else {
-        logger.debug(`${hostName} is a node`)
+        logger.debug(`${hostName} is a node`);
         serverType = "server";
       }
 
@@ -195,7 +213,7 @@ async function generateGraphFiles(
 
     atomicWrite(CACHE_DIR_HTML, htmlContent);
 
-    logger.debug("generateGraphFiles <<< Files generated successfully");
+    logger.info("generateGraphFiles <<< Files generated successfully");
     return true;
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);

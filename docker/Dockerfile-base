@@ -39,6 +39,7 @@ HEALTHCHECK --interval=5m --timeout=3s \
 COPY --chown=dockstatapi:dockstatapi --from=builder /app/dist/src /api/src
 COPY --chown=dockstatapi:dockstatapi --from=builder /app/package*.json /api/
 COPY --chown=dockstatapi:dockstatapi --from=builder /app/src/config/swagger.yaml /api/src/config/swagger.yaml
+COPY --chown=dockstatapi:dockstatapi --from=builder /app/src/utils/assets /api/src/utils/assets
 
 RUN npm install --omit=dev
 

@@ -79,5 +79,4 @@ services:
       - /run
     networks:
       - shared-network
-    ports:
-      - 2375:2375
+

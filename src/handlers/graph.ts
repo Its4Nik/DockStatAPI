@@ -1,62 +1,11 @@
 import cytoscape from "cytoscape";
 import logger from "../utils/logger";
-import {
-  AllContainerData,
-  ContainerData,
-  dockerConfig,
-} from "./../typings/dockerConfig";
+import { AllContainerData, ContainerData } from "./../typings/dockerConfig";
 import { atomicWrite } from "../utils/atomicWrite";
-import { HA_MASTER_IP } from "../config/variables";
-import fs from "fs";
-import fetch from "node-fetch";
 
-const dockerConfigPath = "./src/data/dockerConfig.json";
 const CACHE_DIR_JSON = "./src/data/graph.json";
 const CACHE_DIR_HTML = "./src/data/graph.html";
 const CACHE_DIR_RES = "/src/data/graph.html";
-
-async function checkMaster(url: string): Promise<boolean> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok)
-      throw new Error(`Failed to fetch: ${response.statusText}`);
-
-    const data = await response.json();
-    return data.master === true;
-  } catch (error) {
-    console.error("Error:", error);
-    return false;
-  }
-}
-
-async function isMaster(targetName: string): Promise<boolean> {
-  try {
-    const ip = HA_MASTER_IP;
-
-    if (!ip) {
-      return false;
-    }
-
-    const config: dockerConfig = JSON.parse(
-      fs.readFileSync(dockerConfigPath, "utf-8"),
-    );
-    const target = config.hosts.find((host) => host.name === targetName);
-
-    if (!target) {
-      logger.error(`Host with name "${targetName}" not found in dockerConfig.`);
-      return false;
-    }
-
-    const targetIp = JSON.stringify(target.url).replace(/"/g, "");
-    const targetPort = JSON.stringify(target.port).replace(/"/g, "");
-    const url = `${targetIp}:${targetPort}/ha/config`;
-
-    return await checkMaster(url);
-  } catch (error) {
-    logger.error("Error reading dockerConfig.json:", error);
-    return false;
-  }
-}
 
 async function generateGraphFiles(
   allContainerData: AllContainerData,
@@ -66,22 +15,13 @@ async function generateGraphFiles(
     const graphElements: cytoscape.ElementDefinition[] = [];
 
     for (const [hostName, containers] of Object.entries(allContainerData)) {
-      let serverType = "";
-      if (await isMaster(hostName)) {
-        logger.debug(`${hostName} is a master`);
-        serverType = "master";
-      } else {
-        logger.debug(`${hostName} is a node`);
-        serverType = "server";
-      }
-
       if ("error" in containers) {
         // TODO: make error'ed hosts better
         graphElements.push({
           data: {
             id: hostName,
             label: `Host: ${hostName} Error: ${containers.error}`,
-            type: serverType,
+            type: "server",
           },
         });
       } else {
@@ -92,7 +32,7 @@ async function generateGraphFiles(
           data: {
             id: hostName,
             label: `${hostName} - ${containerList.length} Containers`,
-            type: serverType,
+            type: "server",
           },
         });
 

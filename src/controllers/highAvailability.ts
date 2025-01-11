@@ -57,9 +57,9 @@ async function acquireLock(): Promise<void> {
   try {
     atomicWrite(lockFilePath, "locked", { exclusive: true });
     logger.debug("Lock acquired.");
-  } catch (error) {
-    logger.error(`Error acquiring lock: ${(error as Error).message}`);
-    throw new Error("Failed to acquire lock.");
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -108,7 +108,6 @@ async function readConfig(): Promise<HighAvailabilityConfig | null> {
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(errorMsg);
-    return null;
   } finally {
     await releaseLock();
   }

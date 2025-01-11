@@ -23,8 +23,8 @@ async function hideContainer(containerName: string) {
       await saveData(data);
     }
   } catch (error: unknown) {
-    logger.error(error as Error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -41,8 +41,8 @@ async function unhideContainer(containerName: string) {
       cleanupData();
     }
   } catch (error: unknown) {
-    logger.error(error as Error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -66,8 +66,8 @@ async function addTagToContainer(containerName: string, tag: string) {
       await saveData(data);
     }
   } catch (error: unknown) {
-    logger.error(error as Error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -86,8 +86,8 @@ async function removeTagFromContainer(containerName: string, tag: string) {
       cleanupData();
     }
   } catch (error: unknown) {
-    logger.error(error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -108,8 +108,8 @@ async function pinContainer(containerName: string) {
       await saveData(data);
     }
   } catch (error: unknown) {
-    logger.error(error as Error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -126,8 +126,8 @@ async function unpinContainer(containerName: string) {
       cleanupData();
     }
   } catch (error: unknown) {
-    logger.error(error as Error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -149,8 +149,8 @@ async function setLink(containerName: string, link: string) {
         await saveData(data);
       }
     } catch (error: unknown) {
-      logger.error(error);
-      throw new Error(error as string);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(errorMsg);
     }
   } else {
     logger.error(`Provided link is not valid: ${link}`);
@@ -171,8 +171,8 @@ async function removeLink(containerName: string) {
       cleanupData();
     }
   } catch (error: unknown) {
-    logger.error(error as Error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -201,8 +201,8 @@ async function setIcon(containerName: string, icon: string, custom: boolean) {
       await saveData(data);
     }
   } catch (error: unknown) {
-    logger.error(error as Error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -219,8 +219,8 @@ async function removeIcon(containerName: string) {
       cleanupData();
     }
   } catch (error: unknown) {
-    logger.error(error as Error);
-    throw new Error(error as string);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -252,7 +252,8 @@ async function saveData(data: FrontendConfig) {
     );
     logger.info("Succesfully wrote to file");
   } catch (error: unknown) {
-    logger.error(error as Error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -277,7 +278,8 @@ async function cleanupData() {
 
     await saveData(cleanedData);
   } catch (error: unknown) {
-    logger.error(error as Error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 

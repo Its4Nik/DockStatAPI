@@ -28,7 +28,7 @@ class ConfHandler {
       );
 
       if (config.hosts.some((host) => host.name === name)) {
-        return ResponseHandler.error("Host already exists.", 401);
+        return ResponseHandler.error("Host already exists.", 422);
       }
 
       config.hosts.push({ name, url, port });

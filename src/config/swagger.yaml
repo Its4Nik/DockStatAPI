@@ -91,7 +91,7 @@ paths:
       operationId: enableAuth
       parameters:
         - name: password
-          in: quey
+          in: query
           required: true
           explode: true
           schema:
@@ -100,6 +100,18 @@ paths:
       responses:
         "200":
           description: Succes - Succesfully enabled authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Authentication enabled successfully"
+
         "403":
           description: Error - Password is required / Authentication is already enabled
           content:
@@ -127,7 +139,7 @@ paths:
       operationId: disableAuth
       parameters:
         - name: password
-          in: quey
+          in: query
           required: true
           explode: true
           schema:
@@ -136,6 +148,17 @@ paths:
       responses:
         "200":
           description: Succes - Succesfully disabled authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Authentication disabled successfully"
         "402":
           description: Error - Invalid password
           content:
@@ -172,6 +195,10 @@ paths:
       responses:
         "200":
           description: Succes - Successfully fetched the database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerContainers"
         "402":
           description: Error - Invalid password
           content:
@@ -208,6 +235,10 @@ paths:
       responses:
         "200":
           description: Succes - Successfully fetched the database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndexedServerContainers"
         "402":
           description: Error - Invalid password
           content:
@@ -234,6 +265,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/503"
+
   /data/clear:
     delete:
       tags:
@@ -243,6 +275,18 @@ paths:
       responses:
         "200":
           description: Succes - Successfully cleared the database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Successfully cleared the database"
+
         "402":
           description: Error - Invalid password
           content:
@@ -279,6 +323,12 @@ paths:
       responses:
         "200":
           description: Succes - Successfully fetched all configured hosts
+          content:
+            application/json:
+              schema:
+                type: array
+                example: '[ "Host-1", "Host-2" ]'
+
         "400":
           description: Error - No hosts defined, please add a host via /conf/addHost
         "402":
@@ -322,6 +372,10 @@ paths:
       responses:
         "200":
           description: Succes - Successfully fetched info about target host
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HostInfo"
         "402":
           description: Error - Invalid password
           content:
@@ -358,6 +412,30 @@ paths:
       responses:
         "200":
           description: Succes - Fetched system configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  installedAt:
+                    type: string
+                    format: date-time
+                    example: "2024-12-25T19:20:02.418Z"
+                  backendVersion:
+                    type: string
+                    example: "2.0.1"
+                  inDocker:
+                    type: boolean
+                    example: false
+                  installedBy:
+                    type: string
+                    example: "user"
+                  platform:
+                    type: string
+                    example: "linux"
+                  arch:
+                    type: string
+                    example: "x64"
         "400":
           description: Error - Received empty configuration
         "402":
@@ -394,6 +472,25 @@ paths:
       responses:
         "200":
           description: Succes - Fetched system configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hosts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "Host-1"
+                        url:
+                          type: string
+                          example: "192.168.2.12"
+                        port:
+                          type: string
+                          example: "2375"
         "402":
           description: Error - Invalid password
           content:
@@ -428,6 +525,10 @@ paths:
       responses:
         "200":
           description: Succes - Fetched "Frontend Configuration"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrontendConfig"
         "402":
           description: Error - Invalid password
           content:
@@ -462,6 +563,15 @@ paths:
       responses:
         "200":
           description: Succes - Fetched schedule
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  interval:
+                    type: integer
+                    example: 600
+
         "402":
           description: Error - Invalid password
           content:
@@ -496,6 +606,10 @@ paths:
       responses:
         "200":
           description: Succes - Gathered Status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiStatus"
         "402":
           description: Error - Invalid password
           content:
@@ -530,6 +644,10 @@ paths:
       responses:
         "200":
           description: Succes - Fetched all container statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerContainers"
         "402":
           description: Error - Invalid password
           content:
@@ -566,6 +684,10 @@ paths:
       responses:
         "200":
           description: Succes - Fetched high availability config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HaConfig"
         "402":
           description: Error - Invalid password
           content:
@@ -1602,7 +1724,212 @@ components:
           type: string
           example: "{{container}} on {{host}} is {{state}}"
 
-    402:
+    IndexedServerContainers:
+      type: object
+      properties:
+        "0":
+          type: object
+          properties:
+            Host-1:
+              type: array
+              items:
+                $ref: "#/components/schemas/Container"
+      additionalProperties: false
+
+    ServerContainers:
+      type: object
+      properties:
+        Host-1:
+          type: array
+          items:
+            $ref: "#/components/schemas/Container"
+      additionalProperties: false
+
+    Container:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the container.
+          example: "Container-1"
+        id:
+          type: string
+          description: The unique identifier of the container.
+          example: "a84ca83bb0e7f8c24fe472b9164d40a4bae518ece8369e6776f722b81dd65bcf"
+        hostName:
+          type: string
+          description: The hostname of the server.
+          example: "Host-1"
+        state:
+          type: string
+          description: The current state of the container.
+          example: "running"
+        cpu_usage:
+          type: number
+          description: The CPU usage of the container in arbitrary units.
+          example: 625185.1851851852
+        mem_usage:
+          type: integer
+          description: Memory usage in bytes.
+          example: 359899136
+        mem_limit:
+          type: integer
+          description: Memory limit in bytes.
+          example: 8127893504
+        net_rx:
+          type: integer
+          description: Total network received in bytes.
+          example: 11004185462
+        net_tx:
+          type: integer
+          description: Total network transmitted in bytes.
+          example: 9950013623
+        current_net_rx:
+          type: integer
+          description: Current network received in bytes.
+          example: 11004185462
+        current_net_tx:
+          type: integer
+          description: Current network transmitted in bytes.
+          example: 9950013623
+        networkMode:
+          type: string
+          description: The network mode of the container.
+          example: "docker_default"
+
+    HostInfo:
+      type: object
+      properties:
+        hostName:
+          type: string
+          example: "Host-1"
+        info:
+          type: object
+          properties:
+            ID:
+              type: string
+              format: uuid
+              example: "32b5fad9-9b12-48b0-9ce7-178f2886ad60"
+            Containers:
+              type: integer
+              example: 8
+            ContainersRunning:
+              type: integer
+              example: 8
+            ContainersPaused:
+              type: integer
+              example: 0
+            ContainersStopped:
+              type: integer
+              example: 0
+            Images:
+              type: integer
+              example: 7
+            OperatingSystem:
+              type: string
+              example: "Ubuntu 24.04 LTS"
+            KernelVersion:
+              type: string
+              example: "6.8.0-38-generic"
+            Architecture:
+              type: string
+              example: "x86_64"
+            MemTotal:
+              type: integer
+              example: 8127893504
+            NCPU:
+              type: integer
+              example: 4
+        version:
+          type: object
+          properties:
+            Components:
+              type: object
+              properties:
+                Engine:
+                  type: string
+                  example: "27.1.1"
+                containerd:
+                  type: string
+                  example: "1.7.19"
+                runc:
+                  type: string
+                  example: "1.7.19"
+                docker-init:
+                  type: string
+                  example: "0.19.0"
+
+    Frontend:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the container
+        hidden:
+          type: boolean
+          description: Whether the container is hidden
+        tags:
+          type: array
+          items:
+            type: string
+          description: List of tags associated with the container
+        link:
+          type: string
+          format: uri
+          description: A link associated with the container
+        icon:
+          type: string
+          description: Icon for the container
+        pinned:
+          type: boolean
+          description: Whether the container is pinned
+      required:
+        - name
+
+    FrontendConfig:
+      type: array
+      items:
+        $ref: "#/components/schemas/Frontend"
+
+    ApiStatus:
+      type: object
+      properties:
+        ApiReachable:
+          type: boolean
+          description: Whether the API is reachable
+        online:
+          type: object
+          description: Status of individual services keyed by their names
+          properties:
+            Host-1:
+              type: boolean
+            Host-2:
+              type: boolean
+      required:
+        - ApiReachable
+        - online
+
+    HaConfig:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Whether High availability is active or nots
+        master:
+          type: boolean
+          description: Whether this node is the master node
+        nodes:
+          type: array
+          items:
+            type: string
+            format: hostname
+            description: List of nodes in the cluster, specified by hostname or IP with port
+      required:
+        - active
+        - master
+        - nodes
+
+    401:
       type: object
       properties:
         status:

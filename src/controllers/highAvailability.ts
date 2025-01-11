@@ -108,6 +108,7 @@ async function readConfig(): Promise<HighAvailabilityConfig | null> {
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(errorMsg);
+    return null;
   } finally {
     await releaseLock();
   }

@@ -16,6 +16,7 @@ function getTemplate(): Template | null {
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(errorMsg);
+    return null;
   }
 }
 
@@ -68,6 +69,7 @@ function renderTemplate(containerId: string): string | null {
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(errorMsg);
+    return null;
   }
 }
 

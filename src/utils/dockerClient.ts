@@ -13,6 +13,7 @@ function loadDockerConfig(): dockerConfig {
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(errorMsg);
+    throw new Error(errorMsg);
   }
 }
 

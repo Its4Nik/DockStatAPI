@@ -76,6 +76,9 @@ tags:
   - name: Notification Service
     description: Routes to configure the notification service
 
+  - name: Stacks
+    description: Management of the Stack module
+
 servers:
   - url: http://localhost:9876
     description: "Your DockStatAPI instance"
@@ -1707,6 +1710,68 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/503"
+
+  # ------------------------------
+  # Stack management
+  /stacks/create/{name}:
+    post:
+      tags:
+        - "Stacks"
+      operationId: createStack
+      summary: Creates a docker-compose file inside the stack name directory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              description: Your docker-compose.yaml contents
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Stack created successfully."
+        "402":
+          description: Error - Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/402"
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
 # ------------------------------
 components:
   securitySchemes:

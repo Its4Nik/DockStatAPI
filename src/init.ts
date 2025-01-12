@@ -14,6 +14,7 @@ import trustedProxies from "./controllers/proxy";
 import { limiter } from "./middleware/rateLimiter";
 import { scheduleFetch } from "./controllers/scheduler";
 import cors from "cors";
+import stacks from "./routes/stack/routes";
 import { blockWhileLocked } from "./middleware/checkLock";
 import logger from "./utils/logger";
 import initFiles from "./config/initFiles";
@@ -45,6 +46,7 @@ const initializeApp = (app: express.Application): void => {
   app.use("/frontend", LAB, frontend);
   app.use("/graph", LAB, graph);
   app.use("/notification-service", LAB, notificationService);
+  app.use("/stacks", LAB, stacks);
   app.use("/ha", limiter, authMiddleware, ha);
 
   process.on("exit", (code: number) => {

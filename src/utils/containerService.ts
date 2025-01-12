@@ -5,6 +5,7 @@ import fs from "fs";
 import { atomicWrite } from "./atomicWrite";
 const configPath = "./src/data/dockerConfig.json";
 import { AllContainerData, HostConfig } from "../typings/dockerConfig";
+import { generateGraphFiles } from "../handlers/graph";
 
 function loadConfig() {
   try {
@@ -19,8 +20,8 @@ function loadConfig() {
     logger.debug("Loaded " + configPath);
     return JSON.parse(configData);
   } catch (error: unknown) {
-    logger.error(`Failed to load config: ${(error as Error).message}`);
-    return null;
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -77,10 +78,11 @@ async function fetchAllContainers(): Promise<AllContainerData> {
               current_net_tx: containerStats.networks?.eth0?.tx_bytes || 0,
               networkMode: containerInfo.HostConfig.NetworkMode || "unknown",
             };
-          } catch (containerError: unknown) {
-            logger.error(
-              `Error fetching details for container ID: ${container.Id} on host: ${hostName} - ${(containerError as Error).message}`,
-            );
+          } catch (error: unknown) {
+            const errorMsg =
+              error instanceof Error ? error.message : String(error);
+            logger.error(errorMsg);
+
             return {
               name: container.Names[0].replace("/", ""),
               id: container.Id,
@@ -99,15 +101,16 @@ async function fetchAllContainers(): Promise<AllContainerData> {
         }),
       );
     } catch (error: unknown) {
-      logger.error(
-        `Error fetching containers for host: ${hostName} - ${(error as Error).message}. Stack: ${(error as Error).stack}`,
-      );
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(errorMsg);
+
       allContainerData[hostName] = {
         error: `Error fetching containers: ${(error as Error).message}`,
       };
     }
   }
 
+  generateGraphFiles(allContainerData);
   return allContainerData;
 }
 

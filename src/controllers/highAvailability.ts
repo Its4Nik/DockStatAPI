@@ -57,9 +57,9 @@ async function acquireLock(): Promise<void> {
   try {
     atomicWrite(lockFilePath, "locked", { exclusive: true });
     logger.debug("Lock acquired.");
-  } catch (error) {
-    logger.error(`Error acquiring lock: ${(error as Error).message}`);
-    throw new Error("Failed to acquire lock.");
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -69,8 +69,9 @@ async function releaseLock(): Promise<void> {
       await fs.promises.unlink(lockFilePath);
       logger.debug("Lock released.");
     }
-  } catch (error) {
-    logger.error(`Error releasing lock: ${(error as Error).message}`);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -88,8 +89,9 @@ async function writeConfig(
     await fs.promises.writeFile(filePath, jsonData);
 
     logger.debug(`${filePath} has been written.`);
-  } catch (error) {
-    logger.error(`Error writing config: ${(error as Error).message}`);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   } finally {
     await releaseLock();
   }
@@ -104,7 +106,8 @@ async function readConfig(): Promise<HighAvailabilityConfig | null> {
     );
     return data;
   } catch (error: unknown) {
-    logger.error(`Error reading HA-Config: ${(error as Error).message}`);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
     return null;
   } finally {
     await releaseLock();
@@ -118,8 +121,9 @@ async function prepareFilesForSync(): Promise<Record<string, string>> {
       const content = await fs.promises.readFile(filePath, "utf-8");
       fileData[filePath] = content;
     }
-  } catch (error) {
-    logger.error(`Error preparing files for sync: ${(error as Error).message}`);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
   return fileData;
 }
@@ -147,8 +151,9 @@ async function checkApiReachable(node: string): Promise<boolean> {
       logger.error(`Node ${node} is not reachable. ApiReachable: false`);
       return false;
     }
-  } catch (error) {
-    logger.error(`Error reaching node ${node}: ${(error as Error).message}`);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
     return false;
   }
 }
@@ -229,7 +234,7 @@ async function startMasterNode() {
         ? HA_NODE.split(",").reduce((cache, node, index) => {
             const [ip, port] = node.trim().split(":");
             if (ip && port) {
-              cache[`node-${index + 1}`] = { ip, id: parseInt(port, 10) };
+              cache[`node-${index + 1}`] = { ip, port: parseInt(port, 10) };
             }
             return cache;
           }, {} as NodeCache)
@@ -260,10 +265,9 @@ async function ensureFileExists(
     await fs.promises.mkdir(dirPath, { recursive: true });
     await fs.promises.writeFile(filePath, content, { flag: "w" });
     logger.info(`File updated: ${filePath}`);
-  } catch (error) {
-    logger.error(
-      `Error creating/updating file ${filePath}: ${(error as Error).message}`,
-    );
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   } finally {
     await releaseLock();
   }

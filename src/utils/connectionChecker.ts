@@ -59,8 +59,8 @@ async function checkReachability(): Promise<StatusResponse | undefined> {
     const hosts: target[] = parsedData.hosts;
     return await checkHostStatus(hosts);
   } catch (error: unknown) {
-    logger.error(`Error reading file: ${error as Error}`);
-    return undefined;
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 

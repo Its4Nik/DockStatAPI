@@ -11,10 +11,9 @@ function loadDockerConfig(): dockerConfig {
     logger.debug("Refreshed DockerConfig.json");
     return JSON.parse(rawData) as dockerConfig;
   } catch (error: unknown) {
-    logger.error(
-      "Error loading dockerConfig.json: " + (error as Error).message,
-    );
-    throw new Error("Failed to load Docker configuration");
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
   }
 }
 

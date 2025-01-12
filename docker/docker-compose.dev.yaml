@@ -1,45 +1,4 @@
-networks:
-  shared-network:
-    driver: bridge
-
 services:
-  master:
-    container_name: master
-    user: "${UID:-1000}:${GID:-1000}"
-    environment:
-      - NODE_ENV=development
-      - HA_MASTER=true
-      - HA_MASTER_IP=master:9876
-      - HA_NODE=slave:9876
-      - HA_UNSAFE=true
-    volumes:
-      - ./master/data:/api/src/data
-      - ./master/logs:/api/logs
-    ports:
-      - 9876:9876
-    image: dockstatapi:local
-    networks:
-      - shared-network
-    depends_on:
-      - slave
-      - test-socket-proxy
-
-  slave:
-    container_name: slave
-    user: "${UID:-1000}:${GID:-1000}"
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - ./slave/data:/api/src/data
-      - ./slave/logs:/api/logs
-    ports:
-      - 6789:9876
-    image: dockstatapi:local
-    depends_on:
-      - test-socket-proxy
-    networks:
-      - shared-network
-
   test-socket-proxy:
     image: lscr.io/linuxserver/socket-proxy:latest
     container_name: test-socket-proxy
@@ -77,6 +36,5 @@ services:
     read_only: true
     tmpfs:
       - /run
-    networks:
-      - shared-network
-
+    ports:
+      - 2375:2375

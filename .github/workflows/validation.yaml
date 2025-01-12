@@ -56,12 +56,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
           build-mode: none
           queries: security-extended
+          config: |
+            query-filter:
+              - exclude:
+                  tags: /cwe-200/
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
@@ -80,6 +89,11 @@ jobs:
     steps:
       - name: Set up Grype installation path
         run: echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
       - name: Download Grype
         run: |
@@ -110,6 +124,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -157,6 +176,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

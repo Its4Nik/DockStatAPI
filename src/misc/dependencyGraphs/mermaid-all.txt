@@ -2,106 +2,112 @@ flowchart TB
 
 subgraph 0["src"]
 1["server.ts"]
-subgraph 2["controllers"]
-3["highAvailability.ts"]
-C["proxy.ts"]
-D["scheduler.ts"]
-F["fetchData.ts"]
-Q["auth.ts"]
-X["frontendConfiguration.ts"]
+2["init.ts"]
+subgraph 3["config"]
+4["initFiles.ts"]
+7["variables.ts"]
+B["db.ts"]
 end
-subgraph 4["config"]
-5["variables.ts"]
-B["initFiles.ts"]
-E["db.ts"]
+subgraph 5["controllers"]
+6["proxy.ts"]
+A["scheduler.ts"]
+C["fetchData.ts"]
+N["auth.ts"]
+U["frontendConfiguration.ts"]
+14["highAvailability.ts"]
 end
-subgraph 6["data"]
-7["variables.json"]
+subgraph 8["data"]
+9["variables.json"]
 end
-subgraph 8["typings"]
-9["ha.ts"]
+subgraph D["middleware"]
+E["authMiddleware.ts"]
+H["checkLock.ts"]
+I["rateLimiter.ts"]
 end
-A["init.ts"]
-subgraph G["middleware"]
-H["authMiddleware.ts"]
-K["checkLock.ts"]
-L["rateLimiter.ts"]
-end
-subgraph I["handlers"]
-J["response.ts"]
-P["auth.ts"]
-T["data.ts"]
-W["frontend.ts"]
-10["api.ts"]
+subgraph F["handlers"]
+G["response.ts"]
+M["auth.ts"]
+Q["data.ts"]
+T["frontend.ts"]
+X["api.ts"]
+10["graph.ts"]
 13["ha.ts"]
-16["notification.ts"]
-19["conf.ts"]
+19["notification.ts"]
+1C["conf.ts"]
 end
-subgraph M["routes"]
-subgraph N["auth"]
-O["routes.ts"]
+subgraph J["routes"]
+subgraph K["auth"]
+L["routes.ts"]
 end
-subgraph R["data"]
+subgraph O["data"]
+P["routes.ts"]
+end
+subgraph R["frontendController"]
 S["routes.ts"]
 end
-subgraph U["frontendController"]
-V["routes.ts"]
+subgraph V["getter"]
+W["routes.ts"]
 end
-subgraph Y["getter"]
+subgraph Y["graphs"]
 Z["routes.ts"]
 end
 subgraph 11["highavailability"]
 12["routes.ts"]
 end
-subgraph 14["notifications"]
-15["routes.ts"]
-end
-subgraph 17["setter"]
+subgraph 17["notifications"]
 18["routes.ts"]
 end
+subgraph 1A["setter"]
+1B["routes.ts"]
 end
 end
-1-->3
-1-->A
-3-->5
-3-->9
-5-->7
+subgraph 15["typings"]
+16["ha.ts"]
+end
+end
+1-->2
+2-->4
+2-->6
+2-->A
+2-->E
+2-->H
+2-->I
+2-->L
+2-->P
+2-->S
+2-->W
+2-->Z
+2-->12
+2-->18
+2-->1B
+6-->7
+7-->9
 A-->B
 A-->C
-A-->D
-A-->H
-A-->K
-A-->L
-A-->O
-A-->S
-A-->V
-A-->Z
-A-->12
-A-->15
-A-->18
-C-->5
-D-->E
-D-->F
-F-->E
-H-->J
-K-->J
-O-->P
+C-->B
+E-->G
+H-->G
+L-->M
+M-->N
+M-->G
 P-->Q
-P-->J
+Q-->B
+Q-->G
 S-->T
-T-->E
-T-->J
-V-->W
+T-->U
+T-->G
 W-->X
-W-->J
+X-->A
+X-->G
 Z-->10
-10-->D
-10-->J
+Z-->G
 12-->13
-13-->3
-13-->J
-15-->16
-16-->J
+13-->14
+13-->G
+14-->7
+14-->16
 18-->19
-19-->D
-19-->J
+19-->G
+1B-->1C
+1C-->A
+1C-->G

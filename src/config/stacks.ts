@@ -2,18 +2,24 @@ import logger from "../utils/logger";
 import fs from "fs";
 import YAML from "yamljs";
 import { DockerComposeFile } from "../typings/dockerCompose";
+import { stackConfig } from "../typings/stackConfig";
 
 const nameRegex = /^[A-Za-z0-9]+$/;
 const stackRootFolder = "./stacks";
 const configFilePath = `${stackRootFolder}/.config.json`;
 
-interface Config {
-  stacks: string[];
+async function getStackConfig(): Promise<string> {
+  try {
+    const config = fs.readFileSync(configFilePath, "utf-8");
+    return config;
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
 }
 
 async function createStack(name: string, content: DockerComposeFile) {
-  logger.debug(name);
-  logger.debug(JSON.stringify(content));
   try {
     if (!name) {
       const errorMsg = "Name required";
@@ -56,7 +62,7 @@ async function createStack(name: string, content: DockerComposeFile) {
 
 function updateConfigFile(stackName: string) {
   try {
-    let config: Config = { stacks: [] };
+    let config: stackConfig = { stacks: [] };
     if (fs.existsSync(configFilePath)) {
       const configData = fs.readFileSync(configFilePath, "utf-8");
       config = JSON.parse(configData);
@@ -77,4 +83,4 @@ function updateConfigFile(stackName: string) {
   }
 }
 
-export default createStack;
+export { createStack, getStackConfig };

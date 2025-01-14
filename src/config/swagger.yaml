@@ -1772,6 +1772,110 @@ paths:
               schema:
                 $ref: "#/components/schemas/503"
 
+  /stacks/start/{name}:
+    post:
+      tags:
+        - "Stacks"
+      operationId: startStack
+      summary: Starts the defined stack
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Stack created successfully."
+        "402":
+          description: Error - Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/402"
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/stop/{name}:
+    post:
+      tags:
+        - "Stacks"
+      operationId: stopStack
+      summary: Stops the defined stack
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack stopped
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Stack stopped successfully."
+        "402":
+          description: Error - Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/402"
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
 # ------------------------------
 components:
   securitySchemes:

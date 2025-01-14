@@ -1746,7 +1746,7 @@ paths:
                     example: "success"
                   message:
                     type: string
-                    example: "Stack created successfully."
+                    example: "Stack created"
         "402":
           description: Error - Invalid password
           content:
@@ -1798,7 +1798,7 @@ paths:
                     example: "success"
                   message:
                     type: string
-                    example: "Stack created successfully."
+                    example: "Stack created"
         "402":
           description: Error - Invalid password
           content:
@@ -1850,7 +1850,7 @@ paths:
                     example: "success"
                   message:
                     type: string
-                    example: "Stack stopped successfully."
+                    example: "Stack stopped"
         "402":
           description: Error - Invalid password
           content:

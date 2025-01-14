@@ -33,6 +33,17 @@ info:
     - Multi Arch Docker builds through docker buildx
     - High Availability using single master and unlimited worker nodes!
 
+    <details>
+      <summary>Your container graph</summary>
+      [Interactive Graph](http://localhost:9876/graph)
+
+      [Raw image](http://localhost:9876/graph/image)
+
+      ---
+
+      ![Your container graph](http://localhost:9876/graph/image)
+    </details>
+
     # 🔗 DockStatAPI v2 Documentation
 
     _⚠️ = Deprecation warning_
@@ -162,12 +173,7 @@ paths:
                   message:
                     type: string
                     example: "Authentication disabled successfully"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -202,12 +208,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServerContainers"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -242,12 +243,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/IndexedServerContainers"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -290,12 +286,6 @@ paths:
                     type: string
                     example: "Successfully cleared the database"
 
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
         "403":
           description: Error - Password is required
           content:
@@ -334,12 +324,7 @@ paths:
 
         "400":
           description: Error - No hosts defined, please add a host via /conf/addHost
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -379,12 +364,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HostInfo"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -441,12 +421,7 @@ paths:
                     example: "x64"
         "400":
           description: Error - Received empty configuration
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -494,12 +469,7 @@ paths:
                         port:
                           type: string
                           example: "2375"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -532,12 +502,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FrontendConfig"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -575,12 +540,6 @@ paths:
                     type: integer
                     example: 600
 
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
         "403":
           description: Error - Password is required
           content:
@@ -613,12 +572,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiStatus"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -651,12 +605,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServerContainers"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -691,12 +640,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HaConfig"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -722,12 +666,7 @@ paths:
           description: Succes - Synchronized successfully
         "400":
           description: Error - `files` object is missing or invalid
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -751,12 +690,7 @@ paths:
       responses:
         "200":
           description: Succes - Prepared all files for syncing
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -787,12 +721,7 @@ paths:
                 $ref: "#/components/schemas/Notification-Template"
         "400":
           description: Error - Error while reading file (see server logs)
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -852,12 +781,7 @@ paths:
                   message:
                     type: string
                     example: "Invalid input format. Expected JSON with a 'text' field"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -911,12 +835,7 @@ paths:
                   message:
                     type: string
                     example: "Sent test notification"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -996,12 +915,7 @@ paths:
                   message:
                     type: string
                     example: "Host already exists"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1059,12 +973,7 @@ paths:
                   message:
                     type: string
                     example: "Host name is required"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1133,12 +1042,7 @@ paths:
                   message:
                     type: string
                     example: "Interval must be between 5 minutes and 6 hours."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1187,12 +1091,7 @@ paths:
                   message:
                     type: string
                     example: "Container unhidden successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1239,12 +1138,7 @@ paths:
                   message:
                     type: string
                     example: "Hid container succesfully"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1297,12 +1191,7 @@ paths:
                   message:
                     type: string
                     example: "Tag added successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1355,12 +1244,7 @@ paths:
                   message:
                     type: string
                     example: "Tag removed successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1407,12 +1291,7 @@ paths:
                   message:
                     type: string
                     example: "Container pinned successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1459,12 +1338,7 @@ paths:
                   message:
                     type: string
                     example: "Container unpinned successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1518,12 +1392,7 @@ paths:
                   message:
                     type: string
                     example: "Link added successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1570,12 +1439,7 @@ paths:
                   message:
                     type: string
                     example: "Link removed successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1634,12 +1498,7 @@ paths:
                   message:
                     type: string
                     example: "Icon added successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1686,12 +1545,7 @@ paths:
                   message:
                     type: string
                     example: "Icon removed successfully."
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1747,12 +1601,7 @@ paths:
                   message:
                     type: string
                     example: "Stack created"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1799,12 +1648,7 @@ paths:
                   message:
                     type: string
                     example: "Stack created"
-        "402":
-          description: Error - Invalid password
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/402"
+
         "403":
           description: Error - Password is required
           content:
@@ -1851,12 +1695,42 @@ paths:
                   message:
                     type: string
                     example: "Stack stopped"
-        "402":
-          description: Error - Invalid password
+
+        "403":
+          description: Error - Password is required
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/402"
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/get/{name}:
+    get:
+      tags:
+        - "Stacks"
+      operationId: getStack
+      summary: Get the docker-compose.yaml (as JSON) from the defined stack
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack fetched
         "403":
           description: Error - Password is required
           content:

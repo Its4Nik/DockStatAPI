@@ -3,10 +3,24 @@ import fs from "fs";
 import YAML from "yamljs";
 import { DockerComposeFile } from "../typings/dockerCompose";
 import { stackConfig } from "../typings/stackConfig";
+import { validate } from "../handlers/stack";
 
 const nameRegex = /^[A-Za-z0-9_-]+$/;
 const stackRootFolder = "./stacks";
 const configFilePath = `${stackRootFolder}/.config.json`;
+
+async function getStackCompose(name: string) {
+  try {
+    await validate(name);
+    const stackCompose = `${stackRootFolder}/${name}/docker-compose.yaml`;
+
+    return YAML.parse(fs.readFileSync(stackCompose, "utf-8"));
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+}
 
 async function getStackConfig(): Promise<string> {
   try {
@@ -27,7 +41,7 @@ async function createStack(name: string, content: DockerComposeFile) {
     }
 
     if (!nameRegex.test(name)) {
-      const errorMsg = "Name does not match [A-Za-z0-9]";
+      const errorMsg = "Name does not match [A-Za-z0-9_-]";
       logger.error(errorMsg);
       throw new Error(errorMsg);
     }
@@ -83,4 +97,4 @@ function updateConfigFile(stackName: string) {
   }
 }
 
-export { createStack, getStackConfig };
+export { createStack, getStackConfig, getStackCompose };

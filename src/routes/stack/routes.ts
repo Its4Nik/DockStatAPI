@@ -4,17 +4,22 @@ import { createStackHandler } from "../../handlers/stack";
 
 router.post("/create/:name", async (req: Request, res: Response) => {
   const StackHandler = createStackHandler(req, res);
-  StackHandler.createStack(req, res);
+  return StackHandler.createStack(req, res);
 });
 
 router.post("/start/:name", async (req: Request, res: Response) => {
   const StackHandler = createStackHandler(req, res);
-  StackHandler.start(req, res);
+  return StackHandler.start(req, res);
 });
 
 router.post("/stop/:name", async (req: Request, res: Response) => {
   const StackHandler = createStackHandler(req, res);
-  StackHandler.stop(req, res);
+  return StackHandler.stop(req, res);
+});
+
+router.get("/get/:name", async (req: Request, res: Response) => {
+  const StackHandler = createStackHandler(req, res);
+  return await StackHandler.stackCompose(req, res);
 });
 
 export default router;

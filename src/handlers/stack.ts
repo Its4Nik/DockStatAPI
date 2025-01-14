@@ -1,5 +1,5 @@
 import { Response, Request } from "express";
-import { createStack, getStackConfig } from "../config/stacks";
+import { createStack, getStackConfig, getStackCompose } from "../config/stacks";
 import { DockerComposeFile } from "../typings/dockerCompose";
 import logger from "../utils/logger";
 import * as compose from "docker-compose";
@@ -8,7 +8,7 @@ import { stackConfig } from "../typings/stackConfig";
 import path from "path";
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
-async function validate(name: string): Promise<boolean> {
+export async function validate(name: string): Promise<boolean> {
   const config: stackConfig = JSON.parse(await getStackConfig());
   if (!config.stacks.find((element) => element === name)) {
     throw new Error("Stack not found");
@@ -94,6 +94,21 @@ class StackHandler {
       const errorMsg = error instanceof Error ? error.message : String(error);
       logger.error(errorMsg);
       return ResponseHandler.critical(errorMsg);
+    }
+  }
+
+  async stackCompose(req: Request, res: Response) {
+    const ResponseHandler = createResponseHandler(res);
+    try {
+      const name = req.params.name;
+      return ResponseHandler.rawData(
+        await getStackCompose(name),
+        "Stack compsoe fetched",
+      );
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
     }
   }
 }

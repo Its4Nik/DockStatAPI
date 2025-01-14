@@ -80,6 +80,7 @@ function updateConfigFile(stackName: string) {
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(`Error updating .config.json: ${errorMsg}`);
+    throw new Error(errorMsg);
   }
 }
 

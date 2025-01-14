@@ -17,8 +17,10 @@ async function validate(name: string): Promise<boolean> {
   return true;
 }
 
+const PROJECT_ROOT = path.resolve(__dirname, '../..');
+
 async function composeAction(option: string, name: string): Promise<void> {
-  const composeFile: string = path.join(__dirname, `/../../stacks/${name}`);
+  const composeFile: string = path.join(PROJECT_ROOT, `stacks/${name}`);
   switch (option) {
     case "start": {
       await compose.upAll({ cwd: composeFile, log: false }).then(

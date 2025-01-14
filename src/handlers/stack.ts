@@ -6,18 +6,16 @@ import * as compose from "docker-compose";
 import { createResponseHandler } from "./response";
 import { stackConfig } from "../typings/stackConfig";
 import path from "path";
+const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 async function validate(name: string): Promise<boolean> {
-  const config: stackConfig = await JSON.parse(await getStackConfig());
-
+  const config: stackConfig = JSON.parse(await getStackConfig());
   if (!config.stacks.find((element) => element === name)) {
     throw new Error("Stack not found");
   }
 
   return true;
 }
-
-const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 async function composeAction(option: string, name: string): Promise<void> {
   const composeFile: string = path.join(PROJECT_ROOT, `stacks/${name}`);

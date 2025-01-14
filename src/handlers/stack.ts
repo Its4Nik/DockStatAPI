@@ -17,7 +17,7 @@ async function validate(name: string): Promise<boolean> {
   return true;
 }
 
-const PROJECT_ROOT = path.resolve(__dirname, '../..');
+const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 async function composeAction(option: string, name: string): Promise<void> {
   const composeFile: string = path.join(PROJECT_ROOT, `stacks/${name}`);
@@ -91,7 +91,7 @@ class StackHandler {
       const name: string = req.params.name;
       await validate(name);
       await composeAction("stop", name);
-      return ResponseHandler.ok("Stack started");
+      return ResponseHandler.ok("Stack stopped");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       logger.error(errorMsg);

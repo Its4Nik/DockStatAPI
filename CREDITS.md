@@ -8,6 +8,12 @@ This file shows all npm packages used in DockStatAPI (also Dev packages)
 | ----------------- | -------------------------------------------- | -------------------- |
 | spdx-ranges@2.1.1 | https://github.com/kemitchell/spdx-ranges.js | The Linux Foundation |
 
+### License: Apache 2.0
+
+| Name                   | Repository                                 | Publisher |
+| ---------------------- | ------------------------------------------ | --------- |
+| qrcode-terminal@0.12.0 | https://github.com/gtanner/qrcode-terminal | N/A       |
+
 ### License: Apache-2.0
 
 | Name                                 | Repository                                                               | Publisher            |
@@ -25,6 +31,12 @@ This file shows all npm packages used in DockStatAPI (also Dev packages)
 | @humanwhocodes/retry@0.4.1           | https://github.com/humanwhocodes/retry                                   | Nicholas C. Zaks     |
 | @puppeteer/browsers@2.7.0            | https://github.com/puppeteer/puppeteer/tree/main/packages/browsers       | The Chromium Authors |
 | @scarf/scarf@1.4.0                   | https://github.com/scarf-sh/scarf-js                                     | Scarf Systems        |
+| @sigstore/bundle@3.0.0               | https://github.com/sigstore/sigstore-js                                  | bdehamer@github.com  |
+| @sigstore/core@2.0.0                 | https://github.com/sigstore/sigstore-js                                  | bdehamer@github.com  |
+| @sigstore/protobuf-specs@0.3.2       | https://github.com/sigstore/protobuf-specs                               | bdehamer@github.com  |
+| @sigstore/sign@3.0.0                 | https://github.com/sigstore/sigstore-js                                  | bdehamer@github.com  |
+| @sigstore/tuf@3.0.0                  | https://github.com/sigstore/sigstore-js                                  | bdehamer@github.com  |
+| @sigstore/verify@2.0.0               | https://github.com/sigstore/sigstore-js                                  | bdehamer@github.com  |
 | b4a@1.6.7                            | https://github.com/holepunchto/b4a                                       | Holepunch            |
 | bare-events@2.5.4                    | https://github.com/holepunchto/bare-events                               | Holepunch            |
 | bare-fs@2.3.5                        | https://github.com/holepunchto/bare-fs                                   | Holepunch            |
@@ -40,12 +52,14 @@ This file shows all npm packages used in DockStatAPI (also Dev packages)
 | ejs@3.1.10                           | https://github.com/mde/ejs                                               | Matthew Eernisse     |
 | eslint-visitor-keys@3.4.3            | https://github.com/eslint/eslint-visitor-keys                            | Toru Nagashima       |
 | eslint-visitor-keys@4.2.0            | https://github.com/eslint/js                                             | Toru Nagashima       |
+| exponential-backoff@3.1.1            | https://github.com/coveo/exponential-backoff                             | Sami Sayegh          |
 | fb-watchman@2.0.2                    | https://github.com/facebook/watchman                                     | Wez Furlong          |
 | filelist@1.0.4                       | https://github.com/mde/filelist                                          | Matthew Eernisse     |
 | human-signals@2.1.0                  | https://github.com/ehmicky/human-signals                                 | ehmicky              |
 | jake@10.9.2                          | https://github.com/jakejs/jake                                           | Matthew Eernisse     |
 | puppeteer-core@24.0.0                | https://github.com/puppeteer/puppeteer/tree/main/packages/puppeteer-core | The Chromium Authors |
 | puppeteer@24.0.0                     | https://github.com/puppeteer/puppeteer/tree/main/packages/puppeteer      | The Chromium Authors |
+| sigstore@3.0.0                       | https://github.com/sigstore/sigstore-js                                  | bdehamer@github.com  |
 | spdx-correct@3.2.0                   | https://github.com/jslicense/spdx-correct.js                             | N/A                  |
 | swagger-ui-dist@5.18.2               | https://github.com/swagger-api/swagger-ui                                | N/A                  |
 | text-decoder@1.2.3                   | https://github.com/holepunchto/text-decoder                              | Holepunch            |
@@ -53,6 +67,22 @@ This file shows all npm packages used in DockStatAPI (also Dev packages)
 | typescript@5.7.2                     | https://github.com/microsoft/TypeScript                                  | Microsoft Corp.      |
 | validate-npm-package-license@3.0.4   | https://github.com/kemitchell/validate-npm-package-license.js            | Kyle E. Mitchell     |
 | walker@1.0.8                         | https://github.com/daaku/nodejs-walker                                   | Naitik Shah          |
+
+### License: Artistic-2.0
+
+| Name       | Repository                 | Publisher   |
+| ---------- | -------------------------- | ----------- |
+| npm@11.0.0 | https://github.com/npm/cli | GitHub Inc. |
+
+### License: BlueOak-1.0.0
+
+| Name                         | Repository                                       | Publisher          |
+| ---------------------------- | ------------------------------------------------ | ------------------ |
+| chownr@3.0.0                 | https://github.com/isaacs/chownr                 | Isaac Z. Schlueter |
+| jackspeak@3.4.3              | https://github.com/isaacs/jackspeak              | Isaac Z. Schlueter |
+| package-json-from-dist@1.0.1 | https://github.com/isaacs/package-json-from-dist | Isaac Z. Schlueter |
+| path-scurry@1.11.1           | https://github.com/isaacs/path-scurry            | Isaac Z. Schlueter |
+| yallist@5.0.0                | https://github.com/isaacs/yallist                | Isaac Z. Schlueter |
 
 ### License: CC-BY-3.0
 

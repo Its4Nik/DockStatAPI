@@ -10,8 +10,8 @@ const configFilePath = `${stackRootFolder}/.config.json`;
 
 async function getStackConfig(): Promise<string> {
   try {
-    const config = fs.readFileSync(configFilePath, "utf-8");
-    return config;
+    return fs.readFileSync(configFilePath, "utf-8");
+
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(errorMsg);

@@ -4,7 +4,7 @@ import YAML from "yamljs";
 import { DockerComposeFile } from "../typings/dockerCompose";
 import { stackConfig } from "../typings/stackConfig";
 
-const nameRegex = /^[A-Za-z0-9]+$/;
+const nameRegex = /^[A-Za-z0-9_-]+$/;
 const stackRootFolder = "./stacks";
 const configFilePath = `${stackRootFolder}/.config.json`;
 

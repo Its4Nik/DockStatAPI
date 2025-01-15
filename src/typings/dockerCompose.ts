@@ -16,6 +16,7 @@ export interface ServiceDefinition {
   restart?: string;
   depends_on?: string[];
   deploy?: DeployDefinition;
+  env_file?: string[];
 }
 
 export interface BuildDefinition {

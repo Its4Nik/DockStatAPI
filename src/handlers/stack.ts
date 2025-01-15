@@ -1,11 +1,19 @@
 import { Response, Request } from "express";
-import { createStack, getStackConfig, getStackCompose } from "../config/stacks";
+import {
+  createStack,
+  getStackConfig,
+  getStackCompose,
+  writeEnvFile,
+  getEnvFile,
+} from "../config/stacks";
 import { DockerComposeFile } from "../typings/dockerCompose";
 import logger from "../utils/logger";
 import * as compose from "docker-compose";
 import { createResponseHandler } from "./response";
 import { stackConfig } from "../typings/stackConfig";
+import { dockerStackEnv } from "../typings/dockerStackEnv";
 import path from "path";
+
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 export async function validate(name: string): Promise<boolean> {
@@ -59,8 +67,10 @@ class StackHandler {
     try {
       const name: string = req.params.name;
       const content: DockerComposeFile = req.body;
+      let override = false;
+      override = req.query.override == "true";
 
-      await createStack(name, content);
+      await createStack(name, content, override);
       return ResponseHandler.ok("Stack created");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -103,8 +113,46 @@ class StackHandler {
       const name = req.params.name;
       return ResponseHandler.rawData(
         await getStackCompose(name),
-        "Stack compsoe fetched",
+        "Stack compose fetched",
       );
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }
+
+  async setStackEnv(req: Request, res: Response) {
+    const ResponseHandler = createResponseHandler(res);
+    try {
+      const data: dockerStackEnv = req.body;
+      const name: string = req.params.name;
+      if (await writeEnvFile(name, data)) {
+        return ResponseHandler.ok("Wrote docker.env");
+      } else {
+        return ResponseHandler.critical(
+          "Something went wrong while writing the env File!",
+        );
+      }
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }
+
+  async getStackEnv(req: Request, res: Response) {
+    const ResponseHandler = createResponseHandler(res);
+    try {
+      const name: string = req.params.name;
+      const data = await getEnvFile(name);
+      if (data == null) {
+        return ResponseHandler.error(
+          "No environment file found for this Stack!",
+          404,
+        );
+      }
+      return ResponseHandler.rawData(data, "Read docker.env");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       logger.error(errorMsg);

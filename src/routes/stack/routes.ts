@@ -22,4 +22,14 @@ router.get("/get/:name", async (req: Request, res: Response) => {
   return await StackHandler.stackCompose(req, res);
 });
 
+router.post("/set-env/:name", async (req: Request, res: Response) => {
+  const StackHandler = createStackHandler(req, res);
+  return await StackHandler.setStackEnv(req, res);
+});
+
+router.get("/get-env/:name", async (req: Request, res: Response) => {
+  const StackHandler = createStackHandler(req, res);
+  return await StackHandler.getStackEnv(req, res);
+});
+
 export default router;

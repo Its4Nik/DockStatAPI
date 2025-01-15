@@ -1016,51 +1016,52 @@ paths:
         in: query
         required: true
         description: "Adjust the schedule timing (in seconds)"
-        "200":
-          description: Success - Timing updated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "success"
-                  message:
-                    type: string
-                    example: "Updated interval"
-        "401":
-          description: Error - Interval must be between 5 minutes and 6 hours
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "error"
-                  message:
-                    type: string
-                    example: "Interval must be between 5 minutes and 6 hours."
+    responses:
+      "200":
+        description: Success - Timing updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "Updated interval"
+      "401":
+        description: Error - Interval must be between 5 minutes and 6 hours
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "error"
+                message:
+                  type: string
+                  example: "Interval must be between 5 minutes and 6 hours."
 
-        "403":
-          description: Error - Password is required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/403"
-        "500":
-          description: Error - Critical Error, please see the server's logs
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/500"
-        "503":
-          description: Error - The high-availability lock is currently active, please try again later
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/503"
+      "403":
+        description: Error - Password is required
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/403"
+      "500":
+        description: Error - Critical Error, please see the server's logs
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/500"
+      "503":
+        description: Error - The high-availability lock is currently active, please try again later
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/503"
 
   # ------------------------------
   # Frontend routes:
@@ -1731,6 +1732,87 @@ paths:
       responses:
         "200":
           description: Success - Stack fetched
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/set-env/{name}:
+    post:
+      tags:
+        - "Stacks"
+      operationId: setStackEnv
+      summary: Set the docker.env (as JSON) from the defined stack
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              description: Your docker.env contents
+      parameters:
+        - name: override
+          in: query
+          required: false
+          description: Whether to override (true) the automatic environment file management (boolean value)
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack environment set
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/get-env/{name}:
+    get:
+      tags:
+        - "Stacks"
+      operationId: getStackEnv
+      summary: Get the docker.env (as JSON) from the defined stack
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack config fetched
         "403":
           description: Error - Password is required
           content:

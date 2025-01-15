@@ -3,6 +3,9 @@
 # Version
 VERSION="$(cat ./package.json | grep version | cut -d '"' -f 4)"
 
+# Automatic Stack environment management
+AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT="${AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT:-true}"
+
 # Docker
 if grep -q '/docker' /proc/1/cgroup 2>/dev/null || [ -f /.dockerenv ]; then
     RUNNING_IN_DOCKER="true"
@@ -31,6 +34,7 @@ echo -n "\
     \"TELEGRAM_BOT_TOKEN\": \"${TELEGRAM_BOT_TOKEN}\",
     \"TELEGRAM_CHAT_ID\": \"${TELEGRAM_CHAT_ID}\",
     \"WHATSAPP_API_URL\": \"${WHATSAPP_API_URL}\",
-    \"WHATSAPP_RECIPIENT\": \"${WHATSAPP_RECIPIENT}\"
+    \"WHATSAPP_RECIPIENT\": \"${WHATSAPP_RECIPIENT}\",
+    \"AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT\": \"${AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT}\"
 } \
 " > /api/src/data/variables.json || exit 1

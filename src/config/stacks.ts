@@ -2,8 +2,11 @@ import logger from "../utils/logger";
 import fs from "fs";
 import YAML from "yamljs";
 import { DockerComposeFile } from "../typings/dockerCompose";
+import { dockerStackProperty, dockerStackEnv } from "../typings/dockerStackEnv";
 import { stackConfig } from "../typings/stackConfig";
 import { validate } from "../handlers/stack";
+import { atomicWrite } from "../utils/atomicWrite";
+import { AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT } from "./variables";
 
 const nameRegex = /^[A-Za-z0-9_-]+$/;
 const stackRootFolder = "./stacks";
@@ -32,7 +35,11 @@ async function getStackConfig(): Promise<string> {
   }
 }
 
-async function createStack(name: string, content: DockerComposeFile) {
+async function createStack(
+  name: string,
+  content: DockerComposeFile,
+  override: boolean,
+) {
   try {
     if (!name) {
       const errorMsg = "Name required";
@@ -59,13 +66,24 @@ async function createStack(name: string, content: DockerComposeFile) {
       logger.debug(`Created stack folder at ${stackFolderPath}`);
     }
 
-    const yamlContent = YAML.stringify(content, 10, 2);
+    updateConfigFile(name);
+
+    let yamlContent = "";
+    let environmentFileData: dockerStackEnv = { environment: [] };
+    if (AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT == "true" && override == false) {
+      logger.debug("AEFM is activated");
+      const { cleanCompose, envSchema } = extractAndRemoveEnv(content);
+      yamlContent = YAML.stringify(cleanCompose, 10, 2);
+      environmentFileData = envSchema;
+
+      await writeEnvFile(name, environmentFileData);
+    } else {
+      yamlContent = YAML.stringify(content, 10, 2);
+    }
 
     const filePath = `${stackFolderPath}/docker-compose.yaml`;
-    fs.writeFileSync(filePath, yamlContent);
+    atomicWrite(filePath, yamlContent);
     logger.debug(`Stack content written to ${filePath}`);
-
-    updateConfigFile(name);
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(errorMsg);
@@ -88,7 +106,7 @@ function updateConfigFile(stackName: string) {
     }
 
     const updatedConfig = { stacks };
-    fs.writeFileSync(configFilePath, JSON.stringify(updatedConfig, null, 2));
+    atomicWrite(configFilePath, JSON.stringify(updatedConfig, null, 2));
     logger.debug(`Updated .config.json with stack name: ${stackName}`);
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -97,4 +115,118 @@ function updateConfigFile(stackName: string) {
   }
 }
 
-export { createStack, getStackConfig, getStackCompose };
+async function writeEnvFile(
+  name: string,
+  data: dockerStackEnv,
+): Promise<boolean> {
+  try {
+    await validate(name);
+
+    const dockerEnvPath = `${stackRootFolder}/${name}/docker.env`;
+    const dockerEnvPathBak = `${stackRootFolder}/${name}/.docker.env.bak`;
+
+    const variableNames = data.environment.map(({ name }) => name);
+    const duplicateVars = variableNames.filter(
+      (item, index) => variableNames.indexOf(item) !== index,
+    );
+
+    if (duplicateVars.length > 0) {
+      const duplicatesList = duplicateVars.join(", ");
+      const errorMsg = `Duplicate environment variables detected: ${duplicatesList}`;
+      logger.error(errorMsg);
+      return false;
+    }
+
+    const envFileContent = data.environment
+      .map(({ name, value }) => `${name}="${value}"`)
+      .join("\n");
+
+    if (fs.existsSync(dockerEnvPath)) {
+      logger.debug("Creating a local backup");
+      const previousData = fs.readFileSync(dockerEnvPath);
+      atomicWrite(dockerEnvPathBak, previousData);
+    }
+
+    atomicWrite(dockerEnvPath, envFileContent);
+    return true;
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+}
+
+async function getEnvFile(name: string) {
+  await validate(name);
+  const dockerEnvPath = `${stackRootFolder}/${name}/docker.env`;
+
+  if (fs.existsSync(dockerEnvPath)) {
+    const data = fs.readFileSync(dockerEnvPath, "utf-8");
+
+    const environment: dockerStackProperty[] = data
+      .split("\n")
+      .filter((line) => line.trim() !== "" && line.includes("="))
+      .map((line) => {
+        const [name, ...valueParts] = line.split("=");
+        const value = valueParts.join("=").replace(/^"|"$/g, "");
+        return { name: name.trim(), value: value.trim() };
+      });
+
+    return { environment };
+  } else {
+    return null;
+  }
+}
+
+function extractAndRemoveEnv(data: DockerComposeFile): {
+  cleanCompose: DockerComposeFile;
+  envSchema: dockerStackEnv;
+} {
+  const environment: dockerStackProperty[] = [];
+  const envCount: Record<string, number> = {};
+
+  for (const [, service] of Object.entries(data.services)) {
+    if (service.environment) {
+      for (const key of Object.keys(service.environment)) {
+        envCount[key] = (envCount[key] || 0) + 1;
+      }
+    }
+  }
+
+  for (const [, service] of Object.entries(data.services)) {
+    if (service.environment) {
+      const remainingEnvironment: Record<string, string> = {};
+
+      for (const [key, value] of Object.entries<string>(service.environment)) {
+        if (envCount[key] === 1) {
+          environment.push({ name: key, value });
+        } else {
+          remainingEnvironment[key] = value;
+        }
+      }
+
+      service.environment = remainingEnvironment;
+
+      if (Object.keys(service.environment).length === 0) {
+        delete service.environment;
+      }
+    }
+
+    if (!service.env_file) {
+      service.env_file = ["./docker.env"];
+    }
+  }
+
+  return {
+    cleanCompose: data,
+    envSchema: { environment },
+  };
+}
+
+export {
+  createStack,
+  getStackConfig,
+  getStackCompose,
+  writeEnvFile,
+  getEnvFile,
+};

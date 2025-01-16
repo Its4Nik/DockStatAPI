@@ -74,7 +74,7 @@ class StackHandler {
       return ResponseHandler.ok("Stack created");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg);
+      logger.error(errorMsg.replace(/\n|\r/g, ""));
       return ResponseHandler.critical(errorMsg);
     }
   }
@@ -88,7 +88,7 @@ class StackHandler {
       return ResponseHandler.ok("Stack started");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg);
+      logger.error(errorMsg.replace(/\n|\r/g, ""));
       return ResponseHandler.critical(errorMsg);
     }
   }
@@ -117,7 +117,7 @@ class StackHandler {
       );
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg);
+      logger.error(errorMsg.replace(/\n|\r/g, ""));
       throw new Error(errorMsg);
     }
   }
@@ -136,7 +136,7 @@ class StackHandler {
       }
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg);
+      logger.error(errorMsg.replace(/\n|\r/g, ""));
       throw new Error(errorMsg);
     }
   }
@@ -155,7 +155,7 @@ class StackHandler {
       return ResponseHandler.rawData(data, "Read docker.env");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg);
+      logger.error(errorMsg.replace(/\n|\r/g, ""));
       throw new Error(errorMsg);
     }
   }

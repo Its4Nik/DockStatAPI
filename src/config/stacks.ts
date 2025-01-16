@@ -150,7 +150,7 @@ async function writeEnvFile(
     atomicWrite(dockerEnvPath, envFileContent);
     return true;
   } catch (error: unknown) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorMsg = (error instanceof Error ? error.message : String(error)).replace(/\n|\r/g, "");
     logger.error(errorMsg);
     throw new Error(errorMsg);
   }

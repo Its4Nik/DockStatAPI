@@ -1,5 +1,6 @@
 import logger from "../utils/logger";
 import fs from "fs";
+import path from "path";
 import YAML from "yamljs";
 import { DockerComposeFile } from "../typings/dockerCompose";
 import { dockerStackProperty, dockerStackEnv } from "../typings/dockerStackEnv";
@@ -158,7 +159,10 @@ async function writeEnvFile(
 
 async function getEnvFile(name: string) {
   await validate(name);
-  const dockerEnvPath = `${stackRootFolder}/${name}/docker.env`;
+  const dockerEnvPath = path.resolve(stackRootFolder, name, "docker.env");
+  if (!dockerEnvPath.startsWith(path.resolve(stackRootFolder))) {
+    throw new Error("Invalid path");
+  }
 
   if (fs.existsSync(dockerEnvPath)) {
     const data = fs.readFileSync(dockerEnvPath, "utf-8");

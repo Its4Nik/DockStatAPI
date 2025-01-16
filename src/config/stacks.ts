@@ -123,8 +123,20 @@ async function writeEnvFile(
   try {
     await validate(name);
 
-    const dockerEnvPath = `${stackRootFolder}/${name}/docker.env`;
-    const dockerEnvPathBak = `${stackRootFolder}/${name}/.docker.env.bak`;
+    if (!nameRegex.test(name)) {
+      const errorMsg = `Invalid stack name: ${name}`;
+      logger.error(errorMsg);
+      return false;
+    }
+
+    const dockerEnvPath = path.resolve(stackRootFolder, name, "docker.env");
+    const dockerEnvPathBak = path.resolve(stackRootFolder, name, ".docker.env.bak");
+
+    if (!dockerEnvPath.startsWith(path.resolve(stackRootFolder)) || !dockerEnvPathBak.startsWith(path.resolve(stackRootFolder))) {
+      const errorMsg = `Path traversal attempt detected: ${name}`;
+      logger.error(errorMsg);
+      return false;
+    }
 
     const variableNames = data.environment.map(({ name }) => name);
     const duplicateVars = variableNames.filter(

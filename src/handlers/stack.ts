@@ -74,7 +74,6 @@ class StackHandler {
       return ResponseHandler.ok("Stack created");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg.replace(/\n|\r/g, ""));
       return ResponseHandler.critical(errorMsg);
     }
   }
@@ -88,7 +87,6 @@ class StackHandler {
       return ResponseHandler.ok("Stack started");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg.replace(/\n|\r/g, ""));
       return ResponseHandler.critical(errorMsg);
     }
   }
@@ -102,7 +100,6 @@ class StackHandler {
       return ResponseHandler.ok("Stack stopped");
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg);
       return ResponseHandler.critical(errorMsg);
     }
   }

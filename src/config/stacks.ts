@@ -131,9 +131,16 @@ async function writeEnvFile(
     }
 
     const dockerEnvPath = path.resolve(stackRootFolder, name, "docker.env");
-    const dockerEnvPathBak = path.resolve(stackRootFolder, name, ".docker.env.bak");
+    const dockerEnvPathBak = path.resolve(
+      stackRootFolder,
+      name,
+      ".docker.env.bak",
+    );
 
-    if (!dockerEnvPath.startsWith(path.resolve(stackRootFolder)) || !dockerEnvPathBak.startsWith(path.resolve(stackRootFolder))) {
+    if (
+      !dockerEnvPath.startsWith(path.resolve(stackRootFolder)) ||
+      !dockerEnvPathBak.startsWith(path.resolve(stackRootFolder))
+    ) {
       const sanitizedStackName = name.replace(/\n|\r/g, "");
       const errorMsg = `Path traversal attempt detected: ${sanitizedStackName}`;
       logger.error(errorMsg);
@@ -166,7 +173,9 @@ async function writeEnvFile(
     atomicWrite(dockerEnvPath, envFileContent);
     return true;
   } catch (error: unknown) {
-    const errorMsg = (error instanceof Error ? error.message : String(error)).replace(/\n|\r/g, "");
+    const errorMsg = (
+      error instanceof Error ? error.message : String(error)
+    ).replace(/\n|\r/g, "");
     logger.error(errorMsg);
     throw new Error(errorMsg);
   }

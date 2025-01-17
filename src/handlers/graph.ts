@@ -60,56 +60,60 @@ async function renderGraphToImage(
 async function generateGraphFiles(
   allContainerData: AllContainerData,
 ): Promise<boolean> {
-  try {
-    logger.info("generateGraphFiles >>> Starting generation");
-    const graphElements: cytoscape.ElementDefinition[] = [];
+  if (process.env.CI === "true") {
+    logger.warn("Running inside a CI/CD Action, wont generated graphs");
+    return false;
+  } else {
+    try {
+      logger.info("generateGraphFiles >>> Starting generation");
+      const graphElements: cytoscape.ElementDefinition[] = [];
 
-    for (const [hostName, containers] of Object.entries(allContainerData)) {
-      if ("error" in containers) {
-        // TODO: make error'ed hosts better
-        graphElements.push({
-          data: {
-            id: hostName,
-            label: `Host: ${hostName} Error: ${containers.error}`,
-            type: "server",
-          },
-        });
-      } else {
-        const containerList = containers as ContainerData[];
-
-        // host node with container count
-        graphElements.push({
-          data: {
-            id: hostName,
-            label: `${hostName} - ${containerList.length} Containers`,
-            type: "server",
-          },
-        });
-
-        for (const container of containerList) {
-          // container node
+      for (const [hostName, containers] of Object.entries(allContainerData)) {
+        if ("error" in containers) {
+          // TODO: make error'ed hosts better
           graphElements.push({
             data: {
-              id: container.id,
-              label: `${container.name} (${container.state})`,
-              type: "container",
+              id: hostName,
+              label: `Host: ${hostName} Error: ${containers.error}`,
+              type: "server",
+            },
+          });
+        } else {
+          const containerList = containers as ContainerData[];
+
+          // host node with container count
+          graphElements.push({
+            data: {
+              id: hostName,
+              label: `${hostName} - ${containerList.length} Containers`,
+              type: "server",
             },
           });
 
-          // edge between host and container
-          graphElements.push({
-            data: {
-              source: hostName,
-              target: container.id,
-            },
-          });
+          for (const container of containerList) {
+            // container node
+            graphElements.push({
+              data: {
+                id: container.id,
+                label: `${container.name} (${container.state})`,
+                type: "container",
+              },
+            });
+
+            // edge between host and container
+            graphElements.push({
+              data: {
+                source: hostName,
+                target: container.id,
+              },
+            });
+          }
         }
       }
-    }
 
-    atomicWrite(CACHE_DIR_JSON, JSON.stringify(graphElements, null, 2));
+      atomicWrite(CACHE_DIR_JSON, JSON.stringify(graphElements, null, 2));
 
-    const htmlContent = `
+      const htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -201,17 +205,18 @@ async function generateGraphFiles(
       </html>
     `;
 
-    atomicWrite(CACHE_DIR_HTML, htmlContent);
-    await renderGraphToImage(htmlContent, pngPath)
-      .then(() => logger.debug("HTML converted to image successfully!"))
-      .catch((err) => logger.error("Error:", err));
+      atomicWrite(CACHE_DIR_HTML, htmlContent);
+      await renderGraphToImage(htmlContent, pngPath)
+        .then(() => logger.debug("HTML converted to image successfully!"))
+        .catch((err) => logger.error("Error:", err));
 
-    logger.info("generateGraphFiles <<< Files generated successfully");
-    return true;
-  } catch (error: unknown) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    logger.error(errorMsg);
-    return false;
+      logger.info("generateGraphFiles <<< Files generated successfully");
+      return true;
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(errorMsg);
+      return false;
+    }
   }
 }
 

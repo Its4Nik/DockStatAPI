@@ -56,7 +56,7 @@ const logger = createLogger({
             info.level.toLowerCase(),
             level,
           );
-          const message = `${colors.white}${info.message}${colors.reset}`;
+          const message = `${colors.white}${(info.message as string).replace(/\n|\r/g, "")}${colors.reset}`;
 
           return `${timestamp} ${levelColorized} : ${message}`;
         }),

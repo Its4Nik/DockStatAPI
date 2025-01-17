@@ -4,6 +4,7 @@ declare global {
       // Node specific:
       NODE_ENV: "development" | "production" | "testing";
       PORT: string | undefined;
+      CI: "true" | null;
     }
   }
 }

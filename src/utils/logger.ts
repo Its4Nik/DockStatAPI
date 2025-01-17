@@ -1,7 +1,7 @@
 import { createLogger, format, transports } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
+import { LOG_LEVEL } from "../config/variables";
 
-// ANSI color codes for log level customization
 const colors = {
   gray: "\x1b[90m",
   reset: "\x1b[0m",
@@ -12,7 +12,6 @@ const colors = {
   blue: "\x1b[34m",
 };
 
-// Custom formatter to colorize log levels
 function colorizeLogLevel(level: string, levelName: string) {
   switch (level) {
     case "info":
@@ -28,7 +27,7 @@ function colorizeLogLevel(level: string, levelName: string) {
   }
 }
 
-// Filter out unwanted logs (example: Exit listeners logs)
+// Filter out Exit listeners logs
 const filterLogs = format((info) => {
   if (
     typeof info.message === "string" &&
@@ -39,9 +38,8 @@ const filterLogs = format((info) => {
   return info;
 });
 
-// Logger instance
 const logger = createLogger({
-  level: "debug",
+  level: LOG_LEVEL,
   format: format.combine(
     filterLogs(),
     format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),

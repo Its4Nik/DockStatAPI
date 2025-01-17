@@ -3,7 +3,8 @@ import {
   VERSION,
   HA_MASTER,
   HA_UNSAFE,
-  TRUSTED_PROXYS,
+  TRUSTED_PROXIES,
+  LOG_LEVEL,
 } from "./variables";
 import fs from "fs";
 import logger from "../utils/logger";
@@ -15,6 +16,14 @@ const inDocker: boolean = RUNNING_IN_DOCKER == "true";
 const version: string = VERSION || "unknown";
 const masterNode: string = HA_MASTER === "true" ? "✓" : "✗";
 const unsafeSync: string = HA_UNSAFE === "true" ? "✓" : "✗";
+
+let trustedProxies: string = "";
+
+if (TRUSTED_PROXIES) {
+  trustedProxies = TRUSTED_PROXIES;
+} else {
+  trustedProxies = "✗";
+}
 
 function writeUserConf(port: number) {
   let previousConfig = null;
@@ -72,7 +81,8 @@ function writeUserConf(port: number) {
   logger.info(`Arch        : ${installationDetails.arch}`);
   logger.info(`Master node : ${masterNode}`);
   logger.info(`Unsafe sync : ${unsafeSync}`);
-  logger.info(`Proxies     : ${TRUSTED_PROXYS}`);
+  logger.info(`Proxies     : ${trustedProxies}`);
+  logger.info(`Log Level   : ${LOG_LEVEL}`);
   logger.info(`Server      : http://localhost:${port}`);
   if (process.env.NODE_ENV !== "production") {
     logger.info(`Swagger-UI  : http://localhost:${port}/api-docs`);

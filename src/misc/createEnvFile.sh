@@ -13,11 +13,14 @@ else
     RUNNING_IN_DOCKER="false"
 fi
 
+# Default log level
+LOG_LEVEL="${LOG_LEVEL:-info}"
+
 echo -n "\
 {
     \"VERSION\": \"${VERSION}\",
     \"RUNNING_IN_DOCKER\": \"${RUNNING_IN_DOCKER}\",
-    \"TRUSTED_PROXYS\": \"${TRUSTED_PROXYS}\",
+    \"TRUSTED_PROXIES\": \"${TRUSTED_PROXIES}\",
     \"HA_MASTER\": \"${HA_MASTER}\",
     \"HA_MASTER_IP\": \"${HA_MASTER_IP}\",
     \"HA_NODE\": \"${HA_NODE}\",
@@ -35,6 +38,7 @@ echo -n "\
     \"TELEGRAM_CHAT_ID\": \"${TELEGRAM_CHAT_ID}\",
     \"WHATSAPP_API_URL\": \"${WHATSAPP_API_URL}\",
     \"WHATSAPP_RECIPIENT\": \"${WHATSAPP_RECIPIENT}\",
-    \"AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT\": \"${AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT}\"
+    \"AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT\": \"${AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT}\",
+    \"LOG_LEVEL\": \"${LOG_LEVEL}\"
 } \
 " > /api/src/data/variables.json || exit 1

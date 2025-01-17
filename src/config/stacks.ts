@@ -124,7 +124,8 @@ async function writeEnvFile(
     await validate(name);
 
     if (!nameRegex.test(name)) {
-      const errorMsg = `Invalid stack name: ${name}`;
+      const sanitizedStackName = name.replace(/\n|\r/g, "");
+      const errorMsg = `Invalid stack name: ${sanitizedStackName}`;
       logger.error(errorMsg);
       return false;
     }
@@ -133,7 +134,8 @@ async function writeEnvFile(
     const dockerEnvPathBak = path.resolve(stackRootFolder, name, ".docker.env.bak");
 
     if (!dockerEnvPath.startsWith(path.resolve(stackRootFolder)) || !dockerEnvPathBak.startsWith(path.resolve(stackRootFolder))) {
-      const errorMsg = `Path traversal attempt detected: ${name}`;
+      const sanitizedStackName = name.replace(/\n|\r/g, "");
+      const errorMsg = `Path traversal attempt detected: ${sanitizedStackName}`;
       logger.error(errorMsg);
       return false;
     }
@@ -145,7 +147,8 @@ async function writeEnvFile(
 
     if (duplicateVars.length > 0) {
       const duplicatesList = duplicateVars.join(", ");
-      const errorMsg = `Duplicate environment variables detected: ${duplicatesList}`;
+      const sanitizedDuplicatesList = duplicatesList.replace(/\n|\r/g, "");
+      const errorMsg = `Duplicate environment variables detected: ${sanitizedDuplicatesList}`;
       logger.error(errorMsg);
       return false;
     }

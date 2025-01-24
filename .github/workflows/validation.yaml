@@ -45,20 +45,25 @@ jobs:
   ToDo:
     needs: validation
     runs-on: ubuntu-24.04
-    name: "TODO comment to issue"
+    name: "ToDo comment to issue"
     permissions:
       contents: write
       issues: write
       pull-requests: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
       - name: "TODO to Issue"
         uses: "alstr/todo-to-issue-action@v5"
         with:
           INSERT_ISSUE_URLS: "true"
+      
       - name: Set Git user
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      
       - name: Commit and Push Changes
         run: |
           git add -A

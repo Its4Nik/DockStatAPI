@@ -70,7 +70,6 @@ async function generateGraphFiles(
 
       for (const [hostName, containers] of Object.entries(allContainerData)) {
         if ("error" in containers) {
-          // TODO: make error'ed hosts better
           graphElements.push({
             data: {
               id: hostName,

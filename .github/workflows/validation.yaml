@@ -69,7 +69,7 @@ jobs:
           git add -A
           if [[ `git status --porcelain` ]]; then
             git commit -m "Automatically added GitHub issue links to TODOs"
-            git push origin main
+            git push
           else
             echo "No changes to commit"
           fi

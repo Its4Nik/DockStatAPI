@@ -69,7 +69,7 @@ async function fetchAllContainers(): Promise<AllContainerData> {
               id: container.Id,
               hostName,
               state: container.State,
-              cpu_usage: cpuUsage * 1000000000,
+              cpu_usage: cpuUsage,
               mem_usage: containerStats.memory_stats.usage,
               mem_limit: containerStats.memory_stats.limit,
               net_rx: containerStats.networks?.eth0?.rx_bytes || 0,

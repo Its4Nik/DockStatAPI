@@ -63,7 +63,6 @@ const fetchData = async (): Promise<void> => {
     if (JSON.stringify(previousState) !== JSON.stringify(containerStatus)) {
       atomicWrite(filePath, JSON.stringify(containerStatus, null, 2));
       logger.info(`Container states saved to ${filePath}`);
-      // TODO: Add logic + notification levels per service
     } else {
       logger.info("No state change detected, notifications not triggered.");
     }

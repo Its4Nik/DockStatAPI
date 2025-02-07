@@ -1,7 +1,7 @@
 {
   "VERSION": "",
   "RUNNING_IN_DOCKER": "",
-  "TRUSTED_PROXYS": "",
+  "TRUSTED_PROXIES": "",
   "HA_MASTER": "",
   "HA_MASTER_IP": "",
   "HA_NODE": "",
@@ -18,5 +18,7 @@
   "TELEGRAM_BOT_TOKEN": "",
   "TELEGRAM_CHAT_ID": "",
   "WHATSAPP_API_URL": "",
-  "WHATSAPP_RECIPIENT": ""
+  "WHATSAPP_RECIPIENT": "",
+  "AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT": "true",
+  "LOG_LEVEL": "info"
 }

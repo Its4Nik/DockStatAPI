@@ -11,7 +11,7 @@ spawn_worker(){
 
     echo -e "\nRoute: $route \n${target_route}"
 
-    npx depcruise \
+    test=true depcruise \
         -c ./src/misc/dependencyGraphs/.dependency-cruiser.cjs \
         -p cli-feedback \
         -T mermaid \

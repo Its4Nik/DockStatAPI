@@ -1,4 +1,5 @@
 import { JsonData } from "../typings/hostData";
+import logger from "./logger";
 
 type ComponentMap = Record<string, string>;
 
@@ -38,9 +39,11 @@ function extractRelevantData(jsonData: JsonData) {
             },
             {},
           );
-        } catch (error) {
-          console.error("Error processing Components data:", error);
-          return {};
+        } catch (error: unknown) {
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
+          logger.error(errorMsg);
+          return false;
         }
       })(),
     },

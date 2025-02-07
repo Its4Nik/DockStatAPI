@@ -4,7 +4,8 @@
     "src/logs",
     "**/fixtures/**",
     ".gitignore",
-    "**/*.json"
+    "**/*.json",
+    "**/__tests__/**"
   ],
   "execMap": {
     "ts": "tsx"

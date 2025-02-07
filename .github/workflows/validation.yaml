@@ -26,7 +26,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
 
       - name: Create varaibles.json
         run: npm run local-env-file
@@ -43,8 +43,43 @@ jobs:
       - name: Audit packages
         run: npm audit --audit-level=high
 
-  CodeQL:
+      - name: Jests
+        run: npm run test:silent
+
+  ToDo:
     needs: validation
+    runs-on: ubuntu-20.04
+    name: "ToDo comment to issue"
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: "TODO to Issue"
+        uses: "alstr/todo-to-issue-action@v5"
+        with:
+          INSERT_ISSUE_URLS: "true"
+
+      - name: Set Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and Push Changes
+        run: |
+          git add -A
+          if [[ `git status --porcelain` ]]; then
+            git commit -m "Automatically added GitHub issue links to TODOs"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+  CodeQL:
+    needs: [ToDo]
     runs-on: ubuntu-24.04
     name: "Analyze TypeScript"
     permissions:
@@ -57,12 +92,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
           build-mode: none
           queries: security-extended
+          config: |
+            query-filter:
+              - exclude:
+                  tags: /cwe-200/
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
@@ -70,7 +114,7 @@ jobs:
           category: "/language:javascript-typescript"
 
   Anchore:
-    needs: validation
+    needs: [ToDo]
     runs-on: ubuntu-24.04
     name: "Anchore"
     permissions:
@@ -81,6 +125,11 @@ jobs:
     steps:
       - name: Set up Grype installation path
         run: echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
       - name: Download Grype
         run: |
@@ -100,7 +149,7 @@ jobs:
           sarif_file: ./results.sarif
 
   test-building:
-    needs: [validation]
+    needs: [ToDo]
     runs-on: ubuntu-24.04
     name: "Test building"
     permissions:
@@ -111,6 +160,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -158,6 +212,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

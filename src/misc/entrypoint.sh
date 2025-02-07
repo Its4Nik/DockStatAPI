@@ -3,6 +3,12 @@
 
 VERSION="$(cat ./package.json | grep version | cut -d '"' -f 4)"
 
+if [[ "$1" = "--dev" ]]; then
+    node_env="development"
+elif [[ "$1" = "--prod" ]]; then
+    node_env="production"
+fi
+
 echo -e "
 \033[1;32mWelcome to\033[0m
 
@@ -27,4 +33,4 @@ DockStat and DockStatAPI are 2 fully OpenSource projects, DockStatAPI is a simpl
 
 bash ./createEnvFile.sh
 
-exec node src/server.js
+NODE_ENV=${node_env} node src/server.js

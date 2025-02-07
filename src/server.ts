@@ -1,14 +1,16 @@
 import express from "express";
 import initializeApp from "./init";
-import { startMasterNode } from "./controllers/highAvailability";
 import writeUserConf from "./config/hostsystem";
+import { startServer } from "./utils/startServer";
+const port: number = parseInt(process.env.PORT || "9876");
 
 const app = express();
-const PORT: number = 9876;
 
-writeUserConf();
+if (process.env.NODE_ENV !== "testing") {
+  writeUserConf(port);
+  startServer(app, port);
+}
+
 initializeApp(app);
 
-app.listen(PORT, () => {
-  startMasterNode();
-});
+export default app;

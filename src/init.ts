@@ -7,12 +7,14 @@ import frontend from "./routes/frontendController/routes";
 import api from "./routes/getter/routes";
 import notificationService from "./routes/notifications/routes";
 import conf from "./routes/setter/routes";
+import graph from "./routes/graphs/routes";
 import authMiddleware from "./middleware/authMiddleware";
 import ha from "./routes/highavailability/routes";
 import trustedProxies from "./controllers/proxy";
 import { limiter } from "./middleware/rateLimiter";
 import { scheduleFetch } from "./controllers/scheduler";
 import cors from "cors";
+import stacks from "./routes/stack/routes";
 import { blockWhileLocked } from "./middleware/checkLock";
 import logger from "./utils/logger";
 import initFiles from "./config/initFiles";
@@ -23,11 +25,17 @@ const initializeApp = (app: express.Application): void => {
   initFiles();
   app.use(cors());
   app.use(express.json());
-  app.use("/api-docs", (req: Request, res: Response, next: NextFunction) =>
-    next(),
-  );
 
-  swaggerDocs(app);
+  if (process.env.NODE_ENV !== "production") {
+    app.use("/api-docs", (req: Request, res: Response, next: NextFunction) =>
+      next(),
+    );
+    app.get("/", (req: Request, res: Response) => {
+      res.redirect("/api-docs");
+    });
+    swaggerDocs(app);
+  }
+
   trustedProxies(app);
   scheduleFetch();
 
@@ -36,12 +44,10 @@ const initializeApp = (app: express.Application): void => {
   app.use("/auth", LAB, auth);
   app.use("/data", LAB, data);
   app.use("/frontend", LAB, frontend);
+  app.use("/graph", LAB, graph);
   app.use("/notification-service", LAB, notificationService);
+  app.use("/stacks", LAB, stacks);
   app.use("/ha", limiter, authMiddleware, ha);
-
-  app.get("/", (req: Request, res: Response) => {
-    res.redirect("/api-docs");
-  });
 
   process.on("exit", (code: number) => {
     logger.warn(`Server exiting (Code: ${code})`);

@@ -12,7 +12,8 @@ const scheduleFetch = () => {
     fetchData();
     cleanupOldEntries();
   } catch (error: unknown) {
-    logger.error(`Error during scheduled fetch: ${error}`);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 
   intervalId = setInterval(() => {
@@ -81,8 +82,9 @@ const cleanupOldEntries = async () => {
   try {
     db.run("DELETE FROM data WHERE timestamp < ?", twentyFourHoursAgo, Error);
     logger.info("Old entries cleared from the database.");
-  } catch (Error: unknown) {
-    logger.error(`Error clearing old entries: ${(Error as Error).message}`);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 };
 

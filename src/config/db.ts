@@ -14,7 +14,7 @@ const db: sqlite3.Database = new sqlite3.Database(dbPath, (error: unknown) => {
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
       () => {
-        logger.info("Database created / opened successfully, table is ready.");
+        logger.info("Database created / checked successfully, table is ready.");
       },
     );
   }

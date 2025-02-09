@@ -78,7 +78,6 @@ export function setupWebSocket(server: Server) {
             }
 
             // Read the initial content of the log file
-            let lastSize = fs.statSync(logPath).size;
             const history = fs.readFileSync(logPath, 'utf-8');
             ws.send(JSON.stringify({ type: 'log-history', data: history }));
 

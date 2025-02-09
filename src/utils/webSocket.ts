@@ -38,7 +38,7 @@ export function setupWebSocket(server: Server) {
     wss.on('connection', (ws: WebSocket, req) => {
         const baseURL = `http://${req.headers.host}/`;
         const requestURL = new URL(req.url || '', baseURL);
-        const pathname = requestURL.pathname;
+        const {pathname} = requestURL;
 
         logger.info(`WebSocket connection established to ${pathname}`);
 

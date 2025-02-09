@@ -1,6 +1,14 @@
 import supertest from "supertest";
 import { startServer } from "../src/utils/startServer";
 import app from "../src/server";
+import { Server } from 'http';
+
+const port = 13004;
+const server = new Server(app);
+
+startServer(app, server, port);
+
+const request = supertest(`http://localhost:${port}`);
 
 const sec: number = 1000;
 
@@ -21,41 +29,39 @@ const verifiedResponse = [
   },
 ];
 
-startServer(app, 13004);
 
-const server = supertest("http://localhost:13004");
 
 describe("Test frontend specific configurations", () => {
   it(
     "Setup the configuration file",
     async () => {
       // Hide container
-      let res = await server.delete(`/frontend/hide/${mockContainer}`);
+      let res = await request.delete(`/frontend/hide/${mockContainer}`);
 
       expect(res.status).toEqual(200);
 
       // Add Tag(s)
-      res = await server.post(`/frontend/tag/${mockContainer}/${mockTag1}`);
+      res = await request.post(`/frontend/tag/${mockContainer}/${mockTag1}`);
 
       expect(res.status).toEqual(200);
-      res = await server.post(`/frontend/tag/${mockContainer}/${mockTag2}`);
+      res = await request.post(`/frontend/tag/${mockContainer}/${mockTag2}`);
 
       expect(res.status).toEqual(200);
 
       // Pin container
-      res = await server.post(`/frontend/pin/${mockContainer}`);
+      res = await request.post(`/frontend/pin/${mockContainer}`);
 
       expect(res.status).toEqual(200);
 
       // Add link
-      res = await server.post(
+      res = await request.post(
         `/frontend/add-link/${mockContainer}/${encodeURIComponent(mockLink)}`,
       );
 
       expect(res.status).toEqual(200);
 
       // Add icon
-      res = await server.post(
+      res = await request.post(
         `/frontend/add-icon/${mockContainer}/${mockIcon}/false`,
       );
 
@@ -65,7 +71,7 @@ describe("Test frontend specific configurations", () => {
   );
 
   it("Verify the configuration", async () => {
-    const res = await server.get("/api/frontend-config");
+    const res = await request.get("/api/frontend-config");
 
     expect(res.status).toEqual(200);
     expect(res.body).toEqual(verifiedResponse);
@@ -75,35 +81,35 @@ describe("Test frontend specific configurations", () => {
     "Reset configuration",
     async () => {
       // Show container
-      let res = await server.post(`/frontend/show/${mockContainer}`);
+      let res = await request.post(`/frontend/show/${mockContainer}`);
 
       expect(res.status).toEqual(200);
 
       // Remove tag(s)
-      res = await server.delete(
+      res = await request.delete(
         `/frontend/remove-tag/${mockContainer}/${mockTag1}`,
       );
 
       expect(res.status).toEqual(200);
 
-      res = await server.delete(
+      res = await request.delete(
         `/frontend/remove-tag/${mockContainer}/${mockTag2}`,
       );
 
       expect(res.status).toEqual(200);
 
       // Unpin
-      res = await server.delete(`/frontend/unpin/${mockContainer}`);
+      res = await request.delete(`/frontend/unpin/${mockContainer}`);
 
       expect(res.status).toEqual(200);
 
       // Remove link
-      res = await server.delete(`/frontend/remove-link/${mockContainer}`);
+      res = await request.delete(`/frontend/remove-link/${mockContainer}`);
 
       expect(res.status).toEqual(200);
 
       // Remove icon
-      res = await server.delete(`/frontend/remove-icon/${mockContainer}`);
+      res = await request.delete(`/frontend/remove-icon/${mockContainer}`);
 
       expect(res.status).toEqual(200);
     },
@@ -111,7 +117,7 @@ describe("Test frontend specific configurations", () => {
   );
 
   it("Verify the reset configuration", async () => {
-    const res = await server.get("/api/frontend-config");
+    const res = await request.get("/api/frontend-config");
 
     expect(res.status).toEqual(200);
     expect(res.body).toEqual([]);

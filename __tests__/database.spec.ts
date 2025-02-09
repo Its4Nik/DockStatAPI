@@ -1,26 +1,31 @@
 import supertest from "supertest";
 import { startServer } from "../src/utils/startServer";
 import app from "../src/server";
+import { Server } from 'http';
 
-startServer(app, 13003);
-const server = supertest("http://localhost:13003");
+const port = 13003;
+const server = new Server(app);
+
+startServer(app, server, port);
+
+const request = supertest(`http://localhost:${port}`);
 
 describe("Database", () => {
   it("Get latest database entry", async () => {
-    const res = await server.get("/data/latest");
+    const res = await request.get("/data/latest");
     expect(res.status).toEqual(200);
   });
 
   it("Get all database entries", async () => {
-    const res = await server.get("/data/all");
+    const res = await request.get("/data/all");
     expect(res.status).toEqual(200);
   });
 
   it("Clear database", async () => {
-    let res = await server.delete("/data/clear");
+    let res = await request.delete("/data/clear");
     expect(res.status).toEqual(200);
 
-    res = await server.get("/data/latest");
+    res = await request.get("/data/latest");
     expect(res.status).toEqual(404);
     expect(res.body).toHaveProperty(
       "message",

@@ -79,11 +79,11 @@ export function setupWebSocket(server: Server) {
 
             // Read the initial content of the log file
             let lastSize = fs.statSync(logPath).size;
-            let history = fs.readFileSync(logPath, 'utf-8');
+            const history = fs.readFileSync(logPath, 'utf-8');
             ws.send(JSON.stringify({ type: 'log-history', data: history }));
 
             // Watch the log file for changes
-            const watcher = fs.watch(logPath, (eventType, filename) => {
+            const watcher = fs.watch(logPath, (eventType) => {
                 if (eventType === 'change') {
                     const newSize = fs.statSync(logPath).size;
                     if (newSize > lastSize) {

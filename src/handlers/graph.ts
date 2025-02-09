@@ -31,7 +31,7 @@ async function renderGraphToImage(
     puppeteer = await import("puppeteer");
   } catch (error) {
     logger.error("Puppeteer is not installed. Please install it to generate images.");
-    throw new Error("Puppeteer is not installed");
+    throw new Error(`Puppeteer is not installed (${error})`);
   }
 
   let browser;

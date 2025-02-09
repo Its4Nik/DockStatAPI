@@ -1,5 +1,5 @@
 import logger from "./logger";
-import { ContainerInfo, ContainerStats, ContainerInspectInfo } from "dockerode";
+import { ContainerInfo, } from "dockerode";
 import { getDockerClient } from "./dockerClient";
 import fs from "fs";
 import { atomicWrite } from "./atomicWrite";
@@ -27,7 +27,7 @@ export function loadConfig() {
   }
 }
 
-export async function fetchContainersForHost(hostName: string): Promise<any> {
+export async function fetchContainersForHost(hostName: string) {
   const config = loadConfig();
   const hostConfig = config.hosts.find((h: HostConfig) => h.name === hostName);
 
@@ -126,6 +126,7 @@ export async function streamContainerData(ws: WebSocket, hostName: string) {
     const docker = getDockerClient(hostName);
     const eventStream = await docker.getEvents();
 
+    // eslint-disable-next-line
     if (!(eventStream instanceof require('stream').Readable)) {
       throw new Error('Failed to get valid event stream');
     }

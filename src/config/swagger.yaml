@@ -1524,7 +1524,7 @@ paths:
       tags:
         - "Frontend Configuration"
       operationId: frRmIcon
-      summary: Removean icon from the specified container
+      summary: Remove an icon from the specified container
       parameters:
         - name: containerName
           in: path

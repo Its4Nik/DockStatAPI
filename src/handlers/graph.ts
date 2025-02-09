@@ -77,14 +77,14 @@ async function renderGraphToImage(
       }
     }
 
-    throw new Error(`Graph rendering failed: ${errorMessage}`);
+    throw new Error(`Graph rendering failed - ${errorMessage}`);
   } finally {
     if (browser) {
       await browser.close().catch(() => { });
     }
   }
 
-  logger.info(`Graph rendered and image saved to: ${outputImagePath}`);
+  logger.info(`Graph rendered and image saved to - ${outputImagePath}`);
 }
 
 async function generateGraphFiles(

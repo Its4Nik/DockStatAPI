@@ -12,7 +12,7 @@ export function setupWebSocket(server: Server) {
         logger.debug(`Received upgrade request for URL: ${req.url}`);
         const baseURL = `http://${req.headers.host}/`;
         const requestURL = new URL(req.url || '', baseURL);
-        const {pathname} = requestURL;
+        const { pathname } = requestURL;
         logger.debug(`Parsed pathname: ${pathname}`);
 
         // Debug log to verify path handling
@@ -38,7 +38,7 @@ export function setupWebSocket(server: Server) {
     wss.on('connection', (ws: WebSocket, req) => {
         const baseURL = `http://${req.headers.host}/`;
         const requestURL = new URL(req.url || '', baseURL);
-        const {pathname} = requestURL;
+        const { pathname } = requestURL;
 
         logger.info(`WebSocket connection established to ${pathname}`);
 
@@ -83,27 +83,22 @@ export function setupWebSocket(server: Server) {
             ws.send(JSON.stringify({ type: 'log-history', data: history }));
 
             // Watch the log file for changes
-            const watcher = fs.watch(logPath, (eventType) => {
-                if (eventType === 'change') {
-                    const newSize = fs.statSync(logPath).size;
-                    if (newSize > lastSize) {
-                        const stream = fs.createReadStream(logPath, {
-                            start: lastSize,
-                            end: newSize - 1,
-                            encoding: 'utf-8'
-                        });
+            const watcher = fs.watchFile(logPath, { interval: 1000 }, (curr, prev) => {
+                if (curr.size > prev.size) {
+                    const stream = fs.createReadStream(logPath, {
+                        start: prev.size,
+                        end: curr.size - 1,
+                        encoding: 'utf-8'
+                    });
 
-                        stream.on('data', (chunk) => {
-                            ws.send(JSON.stringify({ type: 'log-update', data: chunk }));
-                        });
-
-                        lastSize = newSize;
-                    }
+                    stream.on('data', (chunk) => {
+                        ws.send(JSON.stringify({ type: 'log-update', data: chunk }));
+                    });
                 }
             });
 
             ws.on('close', () => {
-                watcher.close();
+                watcher.removeAllListeners();
                 logger.info('Closed WebSocket connection for logs');
             });
         } else {

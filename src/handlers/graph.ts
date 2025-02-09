@@ -13,8 +13,8 @@ const pngPath = "./src/data/graph.png";
 
 async function getPathData(path: string) {
   try {
-    const data = await rateLimitedReadFile(path);
-    return data;
+    return await rateLimitedReadFile(path);
+
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error(errorMsg);

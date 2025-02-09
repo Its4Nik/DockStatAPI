@@ -1,17 +1,1 @@
-[
-  {
-    "name": "AUTH-authentik",
-    "pinned": true,
-    "icon": "custom/123",
-    "hidden": true,
-    "link": "https://github.com",
-    "tags": [
-      "123",
-      "abc"
-    ]
-  },
-  {
-    "name": "AUTH-worker",
-    "pinned": true
-  }
-]
+[]

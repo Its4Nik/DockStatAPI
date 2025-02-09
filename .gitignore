@@ -1,5 +1,7 @@
 # custom paths:
 src/data/*
+src/data/frontendConfiguration.json
+
 .tmp
 docker/master
 docker/slave

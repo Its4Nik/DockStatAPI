@@ -12,7 +12,7 @@ export function setupWebSocket(server: Server) {
         logger.debug(`Received upgrade request for URL: ${req.url}`);
         const baseURL = `http://${req.headers.host}/`;
         const requestURL = new URL(req.url || '', baseURL);
-        const pathname = requestURL.pathname;
+        const {pathname} = requestURL;
         logger.debug(`Parsed pathname: ${pathname}`);
 
         // Debug log to verify path handling

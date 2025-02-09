@@ -101,6 +101,7 @@ async function generateGraphFiles(
       for (const [hostName, containers] of Object.entries(allContainerData)) {
         if ("error" in containers) {
           // TODO: make error'ed hosts better
+          // Issue URL: https://github.com/Its4Nik/DockStatAPI/issues/32
           graphElements.push({
             data: {
               id: hostName,

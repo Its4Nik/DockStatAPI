@@ -1,4 +1,4 @@
-import getDockerClient from "../utils/dockerClient";
+import { getDockerClient } from "../utils/dockerClient";
 import logger from "../utils/logger";
 import { Request, Response } from "express";
 import { createResponseHandler } from "../handlers/response";

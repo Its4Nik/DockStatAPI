@@ -113,7 +113,7 @@ paths:
             default: super-secret
       responses:
         "200":
-          description: Succes - Succesfully enabled authentication
+          description: Success - Successfully enabled authentication
           content:
             application/json:
               schema:

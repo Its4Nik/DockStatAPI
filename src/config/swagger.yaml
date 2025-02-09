@@ -1377,7 +1377,7 @@ paths:
           schema:
             type: URI
           required: true
-          llowReserved: false
+          allowReserved: false
           description: The URI of the link (please use Uniform Resource Identifier format)
       responses:
         "200":

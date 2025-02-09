@@ -13,7 +13,9 @@ import ha from "./routes/highavailability/routes";
 import trustedProxies from "./controllers/proxy";
 import { limiter } from "./middleware/rateLimiter";
 import { scheduleFetch } from "./controllers/scheduler";
+import { Server } from 'http';
 import cors from "cors";
+import { setupWebSocket } from "./utils/webSocket";
 import stacks from "./routes/stack/routes";
 import { blockWhileLocked } from "./middleware/checkLock";
 import logger from "./utils/logger";
@@ -21,8 +23,18 @@ import initFiles from "./config/initFiles";
 
 const LAB = [limiter, authMiddleware, blockWhileLocked];
 
-const initializeApp = (app: express.Application): void => {
+const initializeApp = (app: express.Application, server: Server): void => {
   initFiles();
+
+  try {
+    logger.debug("Starting Websocket server, with these endpoints:");
+    logger.debug("ws://localhost:9876/wss/container-data")
+    logger.debug("ws://localhost:9876/wss/server-logs")
+    setupWebSocket(server);
+  } catch (error: unknown) {
+    logger.error("Error starting WebSocket: ", error)
+  }
+
   app.use(cors());
   app.use(express.json());
 

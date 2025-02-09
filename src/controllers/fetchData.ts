@@ -1,5 +1,5 @@
 import db from "../config/db";
-import fetchAllContainers from "../utils/containerService";
+import { fetchAllContainers } from "../utils/containerService";
 import logger from "../utils/logger";
 import fs from "fs";
 import { atomicWrite } from "../utils/atomicWrite";

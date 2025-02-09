@@ -1,7 +1,7 @@
 import extractRelevantData from "../utils/extractHostData";
 import { Request, Response } from "express";
-import getDockerClient from "../utils/dockerClient";
-import fetchAllContainers from "../utils/containerService";
+import { getDockerClient } from "../utils/dockerClient";
+import { fetchAllContainers } from "../utils/containerService";
 import { getCurrentSchedule } from "../controllers/scheduler";
 import fs from "fs";
 import checkReachability from "../utils/connectionChecker";

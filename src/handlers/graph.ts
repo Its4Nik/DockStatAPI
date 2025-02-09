@@ -3,7 +3,6 @@ import logger from "../utils/logger";
 import { AllContainerData, ContainerData } from "./../typings/dockerConfig";
 import { atomicWrite } from "../utils/atomicWrite";
 import { rateLimitedReadFile } from "../utils/rateLimitFS";
-import puppeteer from "puppeteer";
 
 const CACHE_DIR_JSON = "./src/data/graph.json";
 const CACHE_DIR_HTML = "./src/data/graph.html";
@@ -27,33 +26,64 @@ async function renderGraphToImage(
   htmlContent: string,
   outputImagePath: string,
 ): Promise<void> {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [`--window-size=1920,1080`],
-    defaultViewport: {
-      width: 1920,
-      height: 1080,
-    },
-  });
-  const page = await browser.newPage();
-  await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-  //await page.waitForNavigation({ waitUntil: "load" });
-  await page.waitForSelector("#cy", { visible: true });
-  await page.waitForFunction(
-    () => {
-      const cyContainer = document.querySelector("#cy");
-      return cyContainer && cyContainer.children.length > 0;
-    },
-    { timeout: 10000 },
-  );
+  let puppeteer;
+  try {
+    puppeteer = await import("puppeteer");
+  } catch (error) {
+    logger.error("Puppeteer is not installed. Please install it to generate images.");
+    throw new Error("Puppeteer is not installed");
+  }
 
-  await page.screenshot({
-    path: outputImagePath,
-    type: outputImagePath.endsWith(".jpg") ? "jpeg" : "png",
-    fullPage: true,
-  });
+  let browser;
+  try {
+    browser = await puppeteer.default.launch({
+      headless: "shell",
+      args: ["--disable-setuid-sandbox", "--no-sandbox"],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+    });
 
-  await browser.close();
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    await page.waitForSelector("#cy", { visible: true, timeout: 15000 });
+
+    await page.waitForFunction(
+      () => {
+        const cyElement = document.querySelector("#cy");
+        return cyElement ? cyElement.children.length > 0 : false;
+      },
+      { timeout: 10000 }
+    );
+
+    await page.screenshot({
+      path: outputImagePath,
+      type: outputImagePath.endsWith(".jpg") ? "jpeg" : "png",
+      fullPage: true,
+      captureBeyondViewport: true,
+    });
+  } catch (error: unknown) {
+    let errorMessage = "Unknown error occurred during browser operation";
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+
+      // Detect common dependency errors
+      if (errorMessage.includes("libnss3") || errorMessage.includes("libxcb")) {
+        errorMessage = `❗ Missing system dependencies (libnss3)`;
+      }
+
+      // Detect Chrome not found errors
+      if (errorMessage.includes("Failed to launch")) {
+        errorMessage = `❗ Chrome not found!`;
+      }
+    }
+
+    throw new Error(`Graph rendering failed: ${errorMessage}`);
+  } finally {
+    if (browser) {
+      await browser.close().catch(() => { });
+    }
+  }
+
   logger.info(`Graph rendered and image saved to: ${outputImagePath}`);
 }
 

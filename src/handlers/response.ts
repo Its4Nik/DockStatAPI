@@ -29,7 +29,7 @@ class ResponseHandler {
   }
 
   critical(log: string) {
-    logger.error(log);
+    logger.error(log.replace(/\n|\r/g, ""));
     this.res.status(500).json({
       status: "critical",
       message: "Please see the server logs for more info",

@@ -1,5 +1,5 @@
 import db from "../config/db";
-import fetchAllContainers from "../utils/containerService";
+import { fetchAllContainers } from "../utils/containerService";
 import logger from "../utils/logger";
 import fs from "fs";
 import { atomicWrite } from "../utils/atomicWrite";
@@ -68,9 +68,8 @@ const fetchData = async (): Promise<void> => {
       logger.info("No state change detected, notifications not triggered.");
     }
   } catch (error: unknown) {
-    logger.error(
-      `Error fetching data: ${JSON.stringify(error)} \nStack trace: ${(error as Error).stack}`,
-    );
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 };
 

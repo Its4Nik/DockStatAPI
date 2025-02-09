@@ -1,9 +1,54 @@
 import { JsonData } from "../typings/hostData";
+import logger from "./logger";
 
 type ComponentMap = Record<string, string>;
 
-// Export the function with type annotations
-function extractRelevantData(jsonData: JsonData) {
+interface RelevantData {
+  hostName: string;
+  info: {
+    ID: string;
+    Containers: number;
+    ContainersRunning: number;
+    ContainersPaused: number;
+    ContainersStopped: number;
+    Images: number;
+    OperatingSystem: string;
+    KernelVersion: string;
+    Architecture: string;
+    MemTotal: number;
+    NCPU: number;
+  };
+  version: {
+    Components: ComponentMap;
+  };
+}
+
+function processComponents(components: unknown): ComponentMap {
+  try {
+    if (!Array.isArray(components)) return {};
+
+    return components.reduce<ComponentMap>((acc, component) => {
+      if (
+        typeof component === 'object' &&
+        component !== null &&
+        'Name' in component &&
+        'Version' in component
+      ) {
+        const { Name, Version } = component;
+        if (typeof Name === 'string' && typeof Version === 'string') {
+          acc[Name] = Version;
+        }
+      }
+      return acc;
+    }, {});
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error(`Error processing components: ${errorMessage}`);
+    return {};
+  }
+}
+
+export function extractRelevantData(jsonData: JsonData): RelevantData {
   return {
     hostName: jsonData.hostName,
     info: {
@@ -20,29 +65,7 @@ function extractRelevantData(jsonData: JsonData) {
       NCPU: jsonData.info.NCPU,
     },
     version: {
-      Components: (() => {
-        try {
-          if (!Array.isArray(jsonData?.version?.Components)) {
-            return {};
-          }
-
-          return jsonData.version.Components.reduce<ComponentMap>(
-            (acc, component) => {
-              if (
-                typeof component?.Name === "string" &&
-                typeof component?.Version === "string"
-              ) {
-                acc[component.Name] = component.Version;
-              }
-              return acc;
-            },
-            {},
-          );
-        } catch (error) {
-          console.error("Error processing Components data:", error);
-          return {};
-        }
-      })(),
+      Components: processComponents(jsonData?.version?.Components),
     },
   };
 }

@@ -36,7 +36,7 @@ async function authMiddleware(
       storedData.hash,
     );
     if (!passwordMatch) {
-      ResponseHandler.denied("Invalid Password");
+      ResponseHandler.error("Invalid Password", 402);
       return;
     }
 

@@ -2,6 +2,7 @@ import { Response, Request } from "express";
 import db from "../config/db";
 import { Table, DataRow } from "../typings/table";
 import { createResponseHandler } from "./response";
+import logger from "../utils/logger";
 
 function formatRows(rows: DataRow[]): Record<number, string> {
   return rows.reduce(
@@ -54,6 +55,35 @@ class DatabaseHandler {
         }
       },
     );
+  }
+
+  latestRaw(): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      logger.debug("Reading DB");
+      db.get(
+        "SELECT info FROM data ORDER BY timestamp DESC LIMIT 1",
+        (error: unknown, row: Partial<Pick<Table, "info">> | undefined) => {
+          if (error) {
+            return reject(`Database query error: ${error}`);
+          }
+
+          if (!row || !row.info) {
+            return reject("No data available for /data/latest");
+          }
+
+          try {
+            logger.info("Read latest data");
+            const parsedData = JSON.parse(row.info);
+            logger.debug("Parsed data:", parsedData);
+            resolve(parsedData);
+          } catch (error: unknown) {
+            const errorMsg =
+              error instanceof Error ? error.message : String(error);
+            reject(`Error parsing data: ${errorMsg}`);
+          }
+        },
+      );
+    });
   }
 
   all() {

@@ -14,7 +14,8 @@ function getTemplate(): Template | null {
     const data = fs.readFileSync(templatePath, "utf8");
     return JSON.parse(data);
   } catch (error: unknown) {
-    logger.error("Failed to load template:", error as Error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
     return null;
   }
 }
@@ -28,7 +29,8 @@ function setTemplate(newTemplate: string): void {
     );
     logger.debug("Template updated successfully");
   } catch (error: unknown) {
-    logger.error("Failed to update template:", error as Error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
   }
 }
 
@@ -65,7 +67,8 @@ function renderTemplate(containerId: string): string | null {
       return text.replace(new RegExp(`{{${key}}}`, "g"), String(value));
     }, template.text);
   } catch (error: unknown) {
-    logger.error("Failed to load containers:", error as Error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(errorMsg);
     return null;
   }
 }

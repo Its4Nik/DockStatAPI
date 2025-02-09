@@ -1,7 +1,7 @@
 import extractRelevantData from "../utils/extractHostData";
 import { Request, Response } from "express";
-import getDockerClient from "../utils/dockerClient";
-import fetchAllContainers from "../utils/containerService";
+import { getDockerClient } from "../utils/dockerClient";
+import { fetchAllContainers } from "../utils/containerService";
 import { getCurrentSchedule } from "../controllers/scheduler";
 import fs from "fs";
 import checkReachability from "../utils/connectionChecker";
@@ -61,6 +61,10 @@ class ApiHandler {
       const info = await docker.info();
       const version = await docker.version();
       const relevantData = extractRelevantData({ hostName, info, version });
+
+      if (!relevantData) {
+        ResponseHandler.error("No host found", 404);
+      }
 
       return ResponseHandler.rawData(relevantData, "Fetched Host stats");
     } catch (error: unknown) {

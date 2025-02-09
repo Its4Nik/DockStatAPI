@@ -4,7 +4,7 @@ dist="$(pwd)/dist"
 
 run_script() {
     npx uglifyjs --no-annotations --in-situ "$1" > /dev/null
-    echo "✔️  Minified  : $(basename "$1")"
+    echo "✔️ Minified : $(basename "$1")"
 }
 
 if [ -d "$dist" ]; then

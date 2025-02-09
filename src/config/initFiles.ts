@@ -3,6 +3,7 @@ import logger from "../utils/logger";
 import { atomicWrite } from "../utils/atomicWrite";
 
 const files = [
+  { path: "./src/data/highAvailability.json", content: "{}" },
   {
     path: "./src/data/password.json",
     content: JSON.stringify(

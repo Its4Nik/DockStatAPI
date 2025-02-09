@@ -4,7 +4,7 @@ import { AtomicWriteOptions } from "../typings/atomicWrite";
 
 export function atomicWrite(
   targetPath: string,
-  data: string | Buffer | Record<string, string>,
+  data: object | string | Buffer | Record<string, string>,
   options: AtomicWriteOptions = {},
 ): void {
   const { mode = 0o600, exclusive = false } = options;

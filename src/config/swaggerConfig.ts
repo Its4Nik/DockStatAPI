@@ -1,53 +1,10 @@
-const options: {
-  definition: {
-    failOnErrors: boolean;
-    openapi: string;
-    info: {
-      title: string;
-      version: string;
-      description: string;
-    };
-    components: {
-      securitySchemes: {
-        passwordAuth: {
-          type: string;
-          in: string;
-          name: string;
-          description: string;
-        };
-      };
-    };
-    security: Array<{
-      passwordAuth: unknown[];
-    }>;
-  };
-  apis: string[];
-} = {
-  definition: {
-    failOnErrors: true,
-    openapi: "3.0.0",
-    info: {
-      title: "DockStatAPI",
-      version: "2",
-      description: "An API used to query muliple docker hosts",
-    },
-    components: {
-      securitySchemes: {
-        passwordAuth: {
-          type: "apiKey",
-          in: "header",
-          name: "x-password",
-          description: "Password required for authentication",
-        },
-      },
-    },
-    security: [
-      {
-        passwordAuth: [],
-      },
-    ],
-  },
-  apis: ["./src/routes/*/*.ts"],
-};
+import { SwaggerOptions } from "swagger-ui-express";
+import { css } from "./swaggerTheme";
 
-export default options;
+export const options: SwaggerOptions = {
+  swaggerOptions: {
+    tryItOutEnabled: true,
+  },
+  customCss: css,
+  explorer: false,
+};

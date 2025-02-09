@@ -1,0 +1,2095 @@
+openapi: "3.0.0"
+
+security:
+  - passwordAuth: []
+
+info:
+  title: "DockStatAPI"
+  version: "2.0.1"
+  externalDocs:
+    description: DockStat(API) Wiki
+    url: https://outline.itsnik.de/s/dockstat
+  license:
+    name: BSD-3-Clause
+    url: https://github.com/Its4Nik/dockstatapi/tree/main?tab=BSD-3-Clause-1-ov-file#readme
+  contact:
+    email: info@itsnik.de
+  description: |-
+    ![DockStat](https://github.com/Its4Nik/dockstatapi/blob/dev/.github/DockStat-dark.png?raw=true)
+
+    # Pipelines
+
+    [![Docker Image CI](https://img.shields.io/github/actions/workflow/status/Its4Nik/dockstatapi/build-image.yml?branch=main&label=Docker%20Image%20CI&style=for-the-badge&logo=docker)](https://github.com/Its4Nik/dockstatapi/actions/workflows/build-image.yml)
+    [![Validation](https://img.shields.io/github/actions/workflow/status/Its4Nik/dockstatapi/validation.yml?branch=dev&label=Validation&style=for-the-badge&logo=checkmarx)](https://github.com/Its4Nik/dockstatapi/actions/workflows/validation.yml)
+
+    # Feature List:
+
+    - Swagger API Documentation
+    - Database (Keeps data for 24 hours max)
+    - Advanced authentication using hashes and salt
+    - `http` API to configure the backend
+    - Multi-arch docker builds (using buildx github action)
+    - Advanced security through middlewares: rate-limiting and authentication
+    - Multi Arch Docker builds through docker buildx
+    - High Availability using single master and unlimited worker nodes!
+
+    <details>
+      <summary>Your container graph</summary>
+      [Interactive Graph](http://localhost:9876/graph)
+
+      [Raw image](http://localhost:9876/graph/image)
+
+      ---
+
+      ![Your container graph](http://localhost:9876/graph/image)
+    </details>
+
+    # 🔗 DockStatAPI v2 Documentation
+
+    _⚠️ = Deprecation warning_
+
+    - [Introduction](https://outline.itsnik.de/s/dockstat)
+
+    - [DockstatAPI v2](https://outline.itsnik.de/s/dockstat/doc/dockstatapi-v2-XRMDKRqMIg)
+
+      - [API reference](https://outline.itsnik.de/s/dockstat/doc/api-reference-1PTxqx1MQ6)
+      - [How dependency graphs are made](https://outline.itsnik.de/s/dockstat/doc/how-the-dependecy-graphs-are-made-svuZbEHH9g)
+
+    - [DockStat v1](https://outline.itsnik.de/s/dockstat/doc/dockstat-v1-zVaFS4zROI)
+
+      - [⚠️ Customisation](https://outline.itsnik.de/s/dockstat/doc/customization-PiBz4OpQIZ)
+          - [⚠️ Themes](https://outline.itsnik.de/s/dockstat/doc/themes-BFhN6ZBbYx)
+      - [⚠️ Installation](https://outline.itsnik.de/s/dockstat/doc/installation-DaO99bB86q)
+
+    - [⚠️ DockStatAPI v1](https://outline.itsnik.de/s/dockstat/doc/dockstatapi-v1-jLcVCfPNmS)
+        - [⚠️ Integrations](https://outline.itsnik.de/s/dockstat/doc/integrations-Agq1oL6HxF)
+        - [⚠️ Backend API reference](https://outline.itsnik.de/s/dockstat/doc/backend-api-reference-YzcBbDvY33)
+
+tags:
+  - name: Authentication
+    description: Routes to setup / configure authentication
+
+  - name: Configuration
+    description: Configuring the backend
+
+  - name: Database queries
+    description: Queries made against the SQLite database
+
+  - name: "Frontend Configuration"
+    description: Backend routes to configure the integrated "frontend service"
+
+  - name: Miscellaneous
+    description: Some "random" routes which still can be useful
+
+  - name: High availability
+    description: High availability routes, mainly used by HA sync
+
+  - name: Notification Service
+    description: Routes to configure the notification service
+
+  - name: Stacks
+    description: Management of the Stack module
+
+servers:
+  - url: http://localhost:9876
+    description: "Your DockStatAPI instance"
+
+paths:
+  # ------------------------------
+  # Authentication setup:
+  /auth/enable:
+    post:
+      tags:
+        - "Authentication"
+      summary: Enable authentication for every route
+      operationId: enableAuth
+      parameters:
+        - name: password
+          in: query
+          required: true
+          explode: true
+          schema:
+            type: string
+            default: super-secret
+      responses:
+        "200":
+          description: Success - Successfully enabled authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Authentication enabled successfully"
+
+        "403":
+          description: Error - Password is required / Authentication is already enabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /auth/disable:
+    post:
+      tags:
+        - "Authentication"
+      summary: Disable authentication for every route
+      operationId: disableAuth
+      parameters:
+        - name: password
+          in: query
+          required: true
+          explode: true
+          schema:
+            type: string
+            default: super-secret
+      responses:
+        "200":
+          description: Succes - Succesfully disabled authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Authentication disabled successfully"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  # ------------------------------
+  # Database queries:
+  /data/latest:
+    get:
+      tags:
+        - "Database queries"
+      summary: Fetched the last added entry from the Database and provides it via a JSON output
+      operationId: getLatestData
+      responses:
+        "200":
+          description: Succes - Successfully fetched the database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerContainers"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "404":
+          description: Error - No entries found inside database
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /data/all:
+    get:
+      tags:
+        - "Database queries"
+      summary: Provides all database entries with an index starting from 0
+      operationId: getAllData
+      responses:
+        "200":
+          description: Succes - Successfully fetched the database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndexedServerContainers"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "404":
+          description: Error - No entries found inside database
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /data/clear:
+    delete:
+      tags:
+        - "Database queries"
+      summary: Deletes all database entries
+      operationId: dataClear
+      responses:
+        "200":
+          description: Succes - Successfully cleared the database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Successfully cleared the database"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  # ------------------------------
+  # Configuration:
+  /api/hosts:
+    get:
+      tags:
+        - "Configuration"
+      summary: Retrieves the configured name of all added Hosts
+      operationId: getHosts
+      responses:
+        "200":
+          description: Succes - Successfully fetched all configured hosts
+          content:
+            application/json:
+              schema:
+                type: array
+                example: '[ "Host-1", "Host-2" ]'
+
+        "400":
+          description: Error - No hosts defined, please add a host via /conf/addHost
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /api/host/{hostName}/stats:
+    get:
+      tags:
+        - "Configuration"
+      summary: Shows general information about the target host, like dockeer engine version
+      operationId: getHostInfo
+      parameters:
+        - name: hostName
+          in: path
+          description: Hostname of the target host
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Succes - Successfully fetched info about target host
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HostInfo"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "404":
+          description: Error - No Host found
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /api/system:
+    get:
+      tags:
+        - "Configuration"
+      summary: Fetched the installation details of this DockStatAPI instance
+      operationId: getSystem
+      responses:
+        "200":
+          description: Succes - Fetched system configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  installedAt:
+                    type: string
+                    format: date-time
+                    example: "2024-12-25T19:20:02.418Z"
+                  backendVersion:
+                    type: string
+                    example: "2.0.1"
+                  inDocker:
+                    type: boolean
+                    example: false
+                  installedBy:
+                    type: string
+                    example: "user"
+                  platform:
+                    type: string
+                    example: "linux"
+                  arch:
+                    type: string
+                    example: "x64"
+        "400":
+          description: Error - Received empty configuration
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /api/config:
+    get:
+      tags:
+        - "Configuration"
+      summary: Retrieves information about the configured hosts
+      operationId: getConfig
+      responses:
+        "200":
+          description: Succes - Fetched system configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hosts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "Host-1"
+                        url:
+                          type: string
+                          example: "192.168.2.12"
+                        port:
+                          type: string
+                          example: "2375"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /api/frontend-config:
+    get:
+      tags:
+        - "Configuration"
+      summary: Fetches the "Frontend Configuration" => Used in the DockStat frontend
+      operationId: getFrontendConfig
+      responses:
+        "200":
+          description: Succes - Fetched "Frontend Configuration"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FrontendConfig"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /api/current-schedule:
+    get:
+      tags:
+        - "Configuration"
+      summary: Shows the current configured schedule (for fetching data) in seconds
+      operationId: getSchedule
+      responses:
+        "200":
+          description: Succes - Fetched schedule
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  interval:
+                    type: integer
+                    example: 600
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /api/status:
+    get:
+      tags:
+        - "Miscellaneous"
+      summary: Pings all hosts to check reachability
+      operationId: getStatus
+      responses:
+        "200":
+          description: Succes - Gathered Status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiStatus"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /api/containers:
+    get:
+      tags:
+        - "Miscellaneous"
+      summary: Fetched all container data directly from the host without reading from the database
+      operationId: getContainers
+      responses:
+        "200":
+          description: Succes - Fetched all container statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerContainers"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  # ------------------------------
+  # High availability:
+  /ha/config:
+    get:
+      tags:
+        - "High availability"
+      summary: Get the current high availability config
+      operationId: getHaConfig
+      responses:
+        "200":
+          description: Succes - Fetched high availability config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HaConfig"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+
+  /ha/sync:
+    post:
+      tags:
+        - "High availability"
+      deprecated: true
+      summary: This route is not deprecated, but only used by the high availability feature
+      operationId: syncHa
+      responses:
+        "200":
+          description: Succes - Synchronized successfully
+        "400":
+          description: Error - `files` object is missing or invalid
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+
+  /ha/prepare-sync:
+    get:
+      tags:
+        - "High availability"
+      deprecated: true
+      summary: This route is not deprecated, but only used by the high availability feature
+      operationId: syncPrepare
+      responses:
+        "200":
+          description: Succes - Prepared all files for syncing
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+
+  # ------------------------------
+  # Notification Service:
+  /notification-service/get-template:
+    get:
+      tags:
+        - "Notification Service"
+      summary: Fetches the current template for the notification service
+      operationId: getNsTemplate
+      responses:
+        "200":
+          description: Success - Fetched notification template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification-Template"
+        "400":
+          description: Error - Error while reading file (see server logs)
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /notification-service/set-template:
+    post:
+      tags:
+        - "Notification Service"
+        - "Configuration"
+      summary: Update the current notification template
+      operationId: setNsTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Notification-Template"
+      responses:
+        "200":
+          description: Success - Template updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Template updated successfully."
+        "400":
+          description: Error - Invalid input format. Expected JSON with a 'text' field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Invalid input format. Expected JSON with a 'text' field"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /notification-service/test/{type}/{containerId}:
+    post:
+      tags:
+        - "Notification Service"
+      summary: Test a specific type of notification using real data
+      operationId: testNs
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+          description: The desired notification to test
+
+        - in: path
+          name: containerId
+          required: true
+          schema:
+            type: string
+          description: A real container ID is needed to test templating functionality
+      responses:
+        "200":
+          description: Success - Sent test notification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Sent test notification"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+  # ------------------------------
+  # Configuration:
+  /conf/addHost:
+    put:
+      tags:
+        - "Configuration"
+      summary: Adds a new host to the configuration and starts querying it
+      operationId: addHost
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: A name for the new host
+        - name: url
+          in: query
+          required: true
+          description: The target IP or dns entry
+        - name: port
+          in: query
+          required: true
+          description: The targets port on which Docker-Socket-Proxy runs
+      responses:
+        "200":
+          description: Success - Host added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Host added successfully"
+        "400":
+          description: Error - Name, Port, and URL are required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Name, Port, and URL are required"
+        "401":
+          description: Host already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Host already exists"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /conf/removeHost:
+    delete:
+      tags:
+        - "Configuration"
+      summary: Removes an host from the config
+      operationId: removeHost
+      parameters:
+        - name: hostName
+          in: query
+          required: true
+          description: "The name of the to-be-removed-Host"
+      responses:
+        "200":
+          description: Success - Host removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Host removed successfully"
+        "401":
+          description: Error - Host name is required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Host name is required"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "404":
+          description: Error - Host not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Host not found"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /conf/scheduler:
+    tags:
+      - "Configuration"
+    summary: Adjust the scheduler timing
+    operationId: adjustSchedule
+    parameters:
+      - name: interval
+        in: query
+        required: true
+        description: "Adjust the schedule timing (in seconds)"
+    responses:
+      "200":
+        description: Success - Timing updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "success"
+                message:
+                  type: string
+                  example: "Updated interval"
+      "401":
+        description: Error - Interval must be between 5 minutes and 6 hours
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "error"
+                message:
+                  type: string
+                  example: "Interval must be between 5 minutes and 6 hours."
+
+      "403":
+        description: Error - Password is required
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/403"
+      "500":
+        description: Error - Critical Error, please see the server's logs
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/500"
+      "503":
+        description: Error - The high-availability lock is currently active, please try again later
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/503"
+
+  # ------------------------------
+  # Frontend routes:
+  /frontend/show/{containerName}:
+    post:
+      tags:
+        - "Frontend Configuration"
+      operationId: frShowCon
+      summary: Set `hide` to false for the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to unhide
+      responses:
+        "200":
+          description: Success - now showing the container
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Container unhidden successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/hide/{containerName}:
+    delete:
+      tags:
+        - "Frontend Configuration"
+      operationId: frHideCon
+      summary: Set `hide` to true for the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to unhide
+      responses:
+        "200":
+          description: Success - now hiding the container
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Hid container succesfully"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/tag/{containerName}/{tag}:
+    post:
+      tags:
+        - "Frontend Configuration"
+      operationId: frTagCon
+      summary: Add a tag to the tag array for the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to add a tag to
+        - name: tag
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the tag to add
+      responses:
+        "200":
+          description: Success - Tag added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Tag added successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/remove-tag/{containerName}/{tag}:
+    delete:
+      tags:
+        - "Frontend Configuration"
+      operationId: frRmTagCon
+      summary: Remove the specified tag from the tag array for the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to remove a tag from
+        - name: tag
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the tag to remove
+      responses:
+        "200":
+          description: Success - Tag removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Tag removed successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/pin/{containerName}:
+    post:
+      tags:
+        - "Frontend Configuration"
+      operationId: frPinCon
+      summary: Set `pinned` to true for the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to pin
+      responses:
+        "200":
+          description: Success - Container pinned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Container pinned successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/unpin/{containerName}:
+    delete:
+      tags:
+        - "Frontend Configuration"
+      operationId: frRmPinCon
+      summary: Set `pinned` to false for the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to unpin
+      responses:
+        "200":
+          description: Success - Container unpinned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Container unpinned successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/add-link/{containerName}/{link}:
+    post:
+      tags:
+        - "Frontend Configuration"
+      operationId: frAddLinkCon
+      summary: Add a link to the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to add a link to
+        - name: link
+          in: path
+          schema:
+            type: URI
+          required: true
+          allowReserved: false
+          description: The URI of the link (please use Uniform Resource Identifier format)
+      responses:
+        "200":
+          description: Success - Link added to container successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Link added successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/remove-link/{containerName}:
+    delete:
+      tags:
+        - "Frontend Configuration"
+      operationId: frRmLinkCon
+      summary: Remove a link to the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to remove a link from
+      responses:
+        "200":
+          description: Success - Link removed from container successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Link removed successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/add-icon/{containerName}/{icon}/{useCustomIcon}:
+    post:
+      tags:
+        - "Frontend Configuration"
+      operationId: frAddIcon
+      summary: Add an icon (path) to the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to add an icon to
+        - name: icon
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the icon file
+        - name: useCustomIcon
+          in: path
+          schema:
+            type: boolean
+          required: false
+          description: If the icon is a custom icon or not
+      responses:
+        "200":
+          description: Success - Icon added to container successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Icon added successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /frontend/remove-icon/{containerName}:
+    delete:
+      tags:
+        - "Frontend Configuration"
+      operationId: frRmIcon
+      summary: Remove an icon from the specified container
+      parameters:
+        - name: containerName
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the container to remove an icon from
+      responses:
+        "200":
+          description: Success - Icon removed from container successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Icon removed successfully."
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  # ------------------------------
+  # Stack management
+  /stacks/create/{name}:
+    post:
+      tags:
+        - "Stacks"
+      operationId: createStack
+      summary: Creates a docker-compose file inside the stack name directory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              description: Your docker-compose.yaml contents
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Stack created"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/start/{name}:
+    post:
+      tags:
+        - "Stacks"
+      operationId: startStack
+      summary: Starts the defined stack
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Stack created"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/stop/{name}:
+    post:
+      tags:
+        - "Stacks"
+      operationId: stopStack
+      summary: Stops the defined stack
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack stopped
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Stack stopped"
+
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/get/{name}:
+    get:
+      tags:
+        - "Stacks"
+      operationId: getStack
+      summary: Get the docker-compose.yaml (as JSON) from the defined stack
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack fetched
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/set-env/{name}:
+    post:
+      tags:
+        - "Stacks"
+      operationId: setStackEnv
+      summary: Set the docker.env (as JSON) from the defined stack
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              description: Your docker.env contents
+      parameters:
+        - name: override
+          in: query
+          required: false
+          description: Whether to override (true) the automatic environment file management (boolean value)
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack environment set
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+  /stacks/get-env/{name}:
+    get:
+      tags:
+        - "Stacks"
+      operationId: getStackEnv
+      summary: Get the docker.env (as JSON) from the defined stack
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+          required: true
+          description: The name of the stack
+      responses:
+        "200":
+          description: Success - Stack config fetched
+        "403":
+          description: Error - Password is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/403"
+        "500":
+          description: Error - Critical Error, please see the server's logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500"
+        "503":
+          description: Error - The high-availability lock is currently active, please try again later
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/503"
+
+# ------------------------------
+components:
+  securitySchemes:
+    passwordAuth:
+      type: apiKey
+      in: header
+      name: x-password
+      description: Password required for authentication
+
+  schemas:
+    Notification-Template:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "{{container}} on {{host}} is {{state}}"
+
+    IndexedServerContainers:
+      type: object
+      properties:
+        "0":
+          type: object
+          properties:
+            Host-1:
+              type: array
+              items:
+                $ref: "#/components/schemas/Container"
+      additionalProperties: false
+
+    ServerContainers:
+      type: object
+      properties:
+        Host-1:
+          type: array
+          items:
+            $ref: "#/components/schemas/Container"
+      additionalProperties: false
+
+    Container:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the container.
+          example: "Container-1"
+        id:
+          type: string
+          description: The unique identifier of the container.
+          example: "a84ca83bb0e7f8c24fe472b9164d40a4bae518ece8369e6776f722b81dd65bcf"
+        hostName:
+          type: string
+          description: The hostname of the server.
+          example: "Host-1"
+        state:
+          type: string
+          description: The current state of the container.
+          example: "running"
+        cpu_usage:
+          type: number
+          description: The CPU usage of the container in arbitrary units.
+          example: 625185.1851851852
+        mem_usage:
+          type: integer
+          description: Memory usage in bytes.
+          example: 359899136
+        mem_limit:
+          type: integer
+          description: Memory limit in bytes.
+          example: 8127893504
+        net_rx:
+          type: integer
+          description: Total network received in bytes.
+          example: 11004185462
+        net_tx:
+          type: integer
+          description: Total network transmitted in bytes.
+          example: 9950013623
+        current_net_rx:
+          type: integer
+          description: Current network received in bytes.
+          example: 11004185462
+        current_net_tx:
+          type: integer
+          description: Current network transmitted in bytes.
+          example: 9950013623
+        networkMode:
+          type: string
+          description: The network mode of the container.
+          example: "docker_default"
+
+    HostInfo:
+      type: object
+      properties:
+        hostName:
+          type: string
+          example: "Host-1"
+        info:
+          type: object
+          properties:
+            ID:
+              type: string
+              format: uuid
+              example: "32b5fad9-9b12-48b0-9ce7-178f2886ad60"
+            Containers:
+              type: integer
+              example: 8
+            ContainersRunning:
+              type: integer
+              example: 8
+            ContainersPaused:
+              type: integer
+              example: 0
+            ContainersStopped:
+              type: integer
+              example: 0
+            Images:
+              type: integer
+              example: 7
+            OperatingSystem:
+              type: string
+              example: "Ubuntu 24.04 LTS"
+            KernelVersion:
+              type: string
+              example: "6.8.0-38-generic"
+            Architecture:
+              type: string
+              example: "x86_64"
+            MemTotal:
+              type: integer
+              example: 8127893504
+            NCPU:
+              type: integer
+              example: 4
+        version:
+          type: object
+          properties:
+            Components:
+              type: object
+              properties:
+                Engine:
+                  type: string
+                  example: "27.1.1"
+                containerd:
+                  type: string
+                  example: "1.7.19"
+                runc:
+                  type: string
+                  example: "1.7.19"
+                docker-init:
+                  type: string
+                  example: "0.19.0"
+
+    Frontend:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the container
+        hidden:
+          type: boolean
+          description: Whether the container is hidden
+        tags:
+          type: array
+          items:
+            type: string
+          description: List of tags associated with the container
+        link:
+          type: string
+          format: uri
+          description: A link associated with the container
+        icon:
+          type: string
+          description: Icon for the container
+        pinned:
+          type: boolean
+          description: Whether the container is pinned
+      required:
+        - name
+
+    FrontendConfig:
+      type: array
+      items:
+        $ref: "#/components/schemas/Frontend"
+
+    ApiStatus:
+      type: object
+      properties:
+        ApiReachable:
+          type: boolean
+          description: Whether the API is reachable
+        online:
+          type: object
+          description: Status of individual services keyed by their names
+          properties:
+            Host-1:
+              type: boolean
+            Host-2:
+              type: boolean
+      required:
+        - ApiReachable
+        - online
+
+    HaConfig:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Whether High availability is active or nots
+        master:
+          type: boolean
+          description: Whether this node is the master node
+        nodes:
+          type: array
+          items:
+            type: string
+            format: hostname
+            description: List of nodes in the cluster, specified by hostname or IP with port
+      required:
+        - active
+        - master
+        - nodes
+
+    401:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Invalid password"
+
+    403:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "denied"
+        message:
+          type: string
+          example: "Password required"
+
+    500:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "critical"
+        message:
+          type: string
+          example: "Please see the server logs for more info"
+
+    503:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Service unavailable. The high-availability lock is currently active. Please try again later."

@@ -1,9 +1,12 @@
 # custom paths:
 src/data/*
+src/data/frontendConfiguration.json
 
+.tmp
 docker/master
 docker/slave
 .test*
+stacks
 # Created by https://www.toptal.com/developers/gitignore/api/node
 ### Node ###
 *-audit.json

@@ -3,7 +3,7 @@ import vars from "../data/variables.json";
 export const {
   VERSION,
   RUNNING_IN_DOCKER,
-  TRUSTED_PROXYS,
+  TRUSTED_PROXIES,
   HA_MASTER,
   HA_MASTER_IP,
   HA_NODE,
@@ -21,4 +21,6 @@ export const {
   TELEGRAM_CHAT_ID,
   WHATSAPP_API_URL,
   WHATSAPP_RECIPIENT,
+  AUTOMATIC_ENVIRONMENT_FILE_MANAGEMENT,
+  LOG_LEVEL,
 } = vars;

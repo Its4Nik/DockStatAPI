@@ -6,7 +6,7 @@ interface HighAvailabilityConfig {
 
 interface Node {
   ip: string;
-  id: number;
+  port: number;
 }
 
 interface HaNodeConfig {

@@ -7,12 +7,12 @@
 - [x] Structure code differently
 - [x] Write new README and make the docs better
 - [x] Update more files to correct TS syntax => remove "any"
-- [ ] Websockets
+- [X] Websockets
 - [x] Better /api/status endpoint with connection status of each host
 - [x] Update notification service
 - [x] Adjust process.env variables since they don't really work as expected (See [commit](https://github.com/Its4Nik/dockstatapi/pull/21/commits/a03b58c7a17e269f46216df5492e18d008774961))
 - [ ] Better project structure
 - [x] Update logging => Better errors
 - [x] Update json responses
-- [ ] Swagger update
+- [X] Swagger update
 - [ ] Edge case testing

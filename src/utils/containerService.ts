@@ -1,18 +1,18 @@
 import logger from "./logger";
-import { ContainerInfo, } from "dockerode";
+import { ContainerInfo } from "dockerode";
 import { getDockerClient } from "./dockerClient";
 import fs from "fs";
 import { atomicWrite } from "./atomicWrite";
 const configPath = "./src/data/dockerConfig.json";
 import { AllContainerData, HostConfig } from "../typings/dockerConfig";
-import { generateGraphFiles } from "../handlers/graph";
+import { generateGraphJSON } from "../handlers/graph";
 import { WebSocket } from "ws";
 
 export function loadConfig() {
   try {
     if (!fs.existsSync(configPath)) {
       logger.warn(
-        `Config file not found. Creating an empty file at ${configPath}`
+        `Config file not found. Creating an empty file at ${configPath}`,
       );
       atomicWrite(configPath, JSON.stringify({ hosts: [] }, null, 2));
     }
@@ -37,7 +37,9 @@ export async function fetchContainersForHost(hostName: string) {
 
   try {
     const docker = getDockerClient(hostName);
-    const containers: ContainerInfo[] = await docker.listContainers({ all: true });
+    const containers: ContainerInfo[] = await docker.listContainers({
+      all: true,
+    });
 
     return await Promise.all(
       containers.map(async (container) => {
@@ -56,7 +58,8 @@ export async function fetchContainersForHost(hostName: string) {
             containerStats.precpu_stats.system_cpu_usage;
           const cpuUsage =
             systemCpuDelta > 0
-              ? (cpuDelta / systemCpuDelta) * containerStats.cpu_stats.online_cpus
+              ? (cpuDelta / systemCpuDelta) *
+                containerStats.cpu_stats.online_cpus
               : 0;
 
           return {
@@ -90,7 +93,7 @@ export async function fetchContainersForHost(hostName: string) {
             networkMode: "unknown",
           };
         }
-      })
+      }),
     );
   } catch (error) {
     logger.error(`Error fetching containers for ${hostName}: ${error}`);
@@ -105,16 +108,18 @@ export async function fetchAllContainers(): Promise<AllContainerData> {
   await Promise.all(
     config.hosts.map(async (hostConfig: HostConfig) => {
       try {
-        allContainerData[hostConfig.name] = await fetchContainersForHost(hostConfig.name);
+        allContainerData[hostConfig.name] = await fetchContainersForHost(
+          hostConfig.name,
+        );
       } catch (error) {
         allContainerData[hostConfig.name] = {
-          error: `Error fetching containers: ${error instanceof Error ? error.message : String(error)}`
+          error: `Error fetching containers: ${error instanceof Error ? error.message : String(error)}`,
         };
       }
-    })
+    }),
   );
 
-  generateGraphFiles(allContainerData);
+  generateGraphJSON(allContainerData);
   return allContainerData;
 }
 
@@ -127,12 +132,14 @@ export async function streamContainerData(ws: WebSocket, hostName: string) {
     const eventStream = await docker.getEvents();
 
     // eslint-disable-next-line
-    if (!(eventStream instanceof require('stream').Readable)) {
-      throw new Error('Failed to get valid event stream');
+    if (!(eventStream instanceof require("stream").Readable)) {
+      throw new Error("Failed to get valid event stream");
     }
 
     const handleData = (chunk: Buffer) => {
-      ws.send(JSON.stringify({ type: "container-event", data: chunk.toString() }));
+      ws.send(
+        JSON.stringify({ type: "container-event", data: chunk.toString() }),
+      );
     };
 
     const handleError = (err: Error) => {
@@ -140,28 +147,27 @@ export async function streamContainerData(ws: WebSocket, hostName: string) {
       ws.close();
     };
 
-    eventStream
-      .on('data', handleData)
-      .on('error', handleError);
+    eventStream.on("data", handleData).on("error", handleError);
 
     const closeHandler = () => {
       eventStream
-        .removeListener('data', handleData)
-        .removeListener('error', handleError)
-        .removeListener('closed', handleError);
+        .removeListener("data", handleData)
+        .removeListener("error", handleError)
+        .removeListener("closed", handleError);
       logger.info(`Closed event stream for ${hostName}`);
     };
 
-    ws.on('close', closeHandler);
-    ws.on('error', closeHandler);
-
+    ws.on("close", closeHandler);
+    ws.on("error", closeHandler);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.error("Container data error:", message);
-    ws.send(JSON.stringify({
-      error: "Failed to fetch container data",
-      details: message
-    }));
+    ws.send(
+      JSON.stringify({
+        error: "Failed to fetch container data",
+        details: message,
+      }),
+    );
     ws.close();
   }
 }

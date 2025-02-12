@@ -2,7 +2,7 @@ import { createPreviousResponse } from "./util/previousResponse";
 import supertest from "supertest";
 import { startServer } from "../src/utils/startServer";
 import app from "../src/server";
-import { Server } from 'http';
+import { Server } from "http";
 
 const port = 13005;
 const server = new Server(app);

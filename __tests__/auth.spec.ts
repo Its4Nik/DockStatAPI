@@ -1,5 +1,5 @@
 export const testPass = "123456789";
-import { Server } from 'http';
+import { Server } from "http";
 import supertest from "supertest";
 import { startServer } from "../src/utils/startServer";
 import app from "../src/server";

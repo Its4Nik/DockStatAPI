@@ -49,7 +49,6 @@ async function generateGraphJSON(
               id: id,
               label: `${container.name}\n${container.state.toUpperCase()}`,
               type: "container",
-              parent: hostName,
               ...otherContainerProps,
             },
           });

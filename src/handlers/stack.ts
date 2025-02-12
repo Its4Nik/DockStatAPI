@@ -107,7 +107,7 @@ class StackHandler {
   async stackCompose(req: Request, res: Response) {
     const ResponseHandler = createResponseHandler(res);
     try {
-      const {name} = req.params;
+      const { name } = req.params;
       return ResponseHandler.rawData(
         await getStackCompose(name),
         "Stack compose fetched",

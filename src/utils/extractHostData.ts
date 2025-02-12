@@ -29,13 +29,13 @@ function processComponents(components: unknown): ComponentMap {
 
     return components.reduce<ComponentMap>((acc, component) => {
       if (
-        typeof component === 'object' &&
+        typeof component === "object" &&
         component !== null &&
-        'Name' in component &&
-        'Version' in component
+        "Name" in component &&
+        "Version" in component
       ) {
         const { Name, Version } = component;
-        if (typeof Name === 'string' && typeof Version === 'string') {
+        if (typeof Name === "string" && typeof Version === "string") {
           acc[Name] = Version;
         }
       }

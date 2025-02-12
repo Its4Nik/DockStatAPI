@@ -18,7 +18,7 @@ function loadDockerConfig(): dockerConfig {
 
 function createDockerClient(hostConfig: target): Docker {
   logger.info(
-    `Creating Docker client for host: ${hostConfig.url} on port: ${hostConfig.port || 2375}`
+    `Creating Docker client for host: ${hostConfig.url} on port: ${hostConfig.port || 2375}`,
   );
   return new Docker({
     host: hostConfig.url,

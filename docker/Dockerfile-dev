@@ -28,7 +28,7 @@ FROM node:20-alpine AS production
 
 WORKDIR /api
 
-RUN apk add --no-cache docker-cli bash curl && \
+RUN apk add --no-cache docker docker-compose bash curl && \
     adduser -h /api -s /bin/sh -D dockstatapi && \
     addgroup -S docker && \
     addgroup dockstatapi docker

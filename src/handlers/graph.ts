@@ -11,7 +11,6 @@ async function generateGraphJSON(
   try {
     logger.info("generateGraphJSON >>> Starting generation");
 
-    // Define the new JSON structure
     const graphData = {
       nodes: [] as cytoscape.ElementDefinition[],
       edges: [] as cytoscape.ElementDefinition[],
@@ -66,7 +65,6 @@ async function generateGraphJSON(
       }
     }
 
-    // Write the new structured JSON to file
     atomicWrite(CACHE_DIR_JSON, JSON.stringify(graphData, null, 2));
     logger.info("generateGraphJSON <<< JSON file generated successfully");
     return true;

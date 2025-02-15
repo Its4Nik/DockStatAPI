@@ -33,17 +33,6 @@ info:
     - Multi Arch Docker builds through docker buildx
     - High Availability using single master and unlimited worker nodes!
 
-    <details>
-      <summary>Your container graph</summary>
-      [Interactive Graph](http://localhost:9876/graph)
-
-      [Raw image](http://localhost:9876/graph/image)
-
-      ---
-
-      ![Your container graph](http://localhost:9876/graph/image)
-    </details>
-
     # 🔗 DockStatAPI v2 Documentation
 
     _⚠️ = Deprecation warning_

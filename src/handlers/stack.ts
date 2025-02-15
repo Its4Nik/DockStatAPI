@@ -53,7 +53,7 @@ async function composeAction(option: string, name: string): Promise<void> {
     }
 
     if (errorMessage.search(portAllocated)) {
-      errorMessage = "Port(s) already allocated";
+      logger.error("Port(s) already allocated");
     }
     throw new Error(errorMessage);
   }

@@ -27,29 +27,35 @@ export async function validate(name: string): Promise<boolean> {
 
 async function composeAction(option: string, name: string): Promise<void> {
   const composeFile: string = path.join(PROJECT_ROOT, `stacks/${name}`);
-  switch (option) {
-    case "start": {
-      await compose.upAll({ cwd: composeFile, log: false }).then(
-        () => {
-          return true;
-        },
-        (err: unknown) => {
-          throw new Error(err as string);
-        },
-      );
-      break;
+  try {
+    switch (option) {
+      case "start": {
+        await compose.upAll({ cwd: composeFile, log: false });
+        break;
+      }
+      case "stop": {
+        await compose.downAll({ cwd: composeFile, log: false });
+        break;
+      }
+      default:
+        throw new Error(`Invalid option: ${option}`);
     }
-    case "stop": {
-      await compose.downAll({ cwd: composeFile, log: false }).then(
-        () => {
-          return true;
-        },
-        (err: unknown) => {
-          throw new Error(err as string);
-        },
-      );
-      break;
+  } catch (err) {
+    let errorMessage: string;
+    const portAllocated: string = "port is already allocated";
+
+    if (err instanceof Error) {
+      errorMessage = err.message;
+    } else if (typeof err === "object" && err !== null) {
+      errorMessage = JSON.stringify(err);
+    } else {
+      errorMessage = String(err);
     }
+
+    if (errorMessage.search(portAllocated)) {
+      errorMessage = "Port(s) already allocated";
+    }
+    throw new Error(errorMessage);
   }
 }
 

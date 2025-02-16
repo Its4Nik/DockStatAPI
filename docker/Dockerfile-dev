@@ -54,6 +54,7 @@ RUN addgroup -g $GROUP_ID dockstatapi && \
 COPY --from=builder --chown=dockstatapi:dockstatapi /app/dist/src ./src
 COPY --from=builder --chown=dockstatapi:dockstatapi /app/src/config/swagger.yaml ./src/config/swagger.yaml
 COPY --from=builder --chown=dockstatapi:dockstatapi /app/src/utils/assets ./src/utils/assets
+COPY --from=builder /app/package.json ./
 COPY --from=deps --chown=dockstatapi:dockstatapi /api/node_modules ./node_modules
 
 COPY --from=builder --chown=dockstatapi:dockstatapi /app/src/misc/entrypoint.sh .

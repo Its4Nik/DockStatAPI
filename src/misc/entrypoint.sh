@@ -1,4 +1,3 @@
-# entrypoint.sh:
 #!/bin/bash
 
 VERSION="$(cat ./package.json | grep version | cut -d '"' -f 4)"

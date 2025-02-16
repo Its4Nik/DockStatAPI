@@ -155,7 +155,11 @@ jobs:
       contents: read
     strategy:
       matrix:
-        type: [dev, pre-release]
+        type: [dev, pre-release, release]
+    if: >
+      (matrix.type == 'dev' && github.ref_name == 'dev')
+      || (matrix.type == 'pre-release' && github.event_name == 'release' && github.event.release.prerelease)
+      || (matrix.type == 'release' && github.event_name == 'release' && !github.event.release.prerelease)
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -176,7 +180,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,enable=${{ matrix.type == 'dev' && github.ref_name == 'dev' || matrix.type == 'pre-release' && github.event.release.prerelease }},value=${{ matrix.type == 'dev' && 'nightly' || 'pre' }}
+            type=raw,enable=${{ matrix.type == 'dev' && github.ref_name == 'dev' || matrix.type == 'pre-release' && github.event_name == 'release' && github.event.release.prerelease || matrix.type == 'release' && github.event_name == 'release' && !github.event.release.prerelease }},value=${{ matrix.type == 'dev' && 'nightly' || matrix.type == 'pre-release' && 'pre' || matrix.type == 'release' && 'latest' }}
 
       - name: Build and push
         uses: docker/build-push-action@v6

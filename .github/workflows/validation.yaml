@@ -1,20 +1,18 @@
-name: "Run all tests"
+name: "CI/CD Pipeline"
 
 on:
   push:
   release:
-    types:
-      - published
+    types: [published]
 
 jobs:
   validation:
+    name: "Code Validation & Tests"
     runs-on: ubuntu-24.04
-    name: "Validation"
     permissions:
-      security-events: write
-      packages: read
       actions: read
       contents: read
+      packages: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,77 +29,37 @@ jobs:
       - name: Create varaibles.json
         run: npm run local-env-file
 
-      - name: Run prettier
+      - name: Run code formatting
         run: npm run prettier
 
       - name: Run linter
         run: npm run lint
 
-      - name: Build
+      - name: Build project
         run: npm run build:mini
 
       - name: Audit packages
         run: npm audit --audit-level=high
 
-      - name: Jests
+      - name: Run tests
         run: npm run test:silent
 
-  ToDo:
-    needs: validation
-    runs-on: ubuntu-20.04
-    name: "ToDo comment to issue"
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: "TODO to Issue"
-        uses: "alstr/todo-to-issue-action@v5"
-        with:
-          INSERT_ISSUE_URLS: "true"
-
-      - name: Set Git user
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Commit and Push Changes
-        run: |
-          git add -A
-          if [[ `git status --porcelain` ]]; then
-            git commit -m "Automatically added GitHub issue links to TODOs"
-            git push
-          else
-            echo "No changes to commit"
-          fi
-
-  CodeQL:
-    needs: [ToDo]
+  security-analysis:
+    name: "Security Analysis"
     runs-on: ubuntu-24.04
-    name: "Analyze TypeScript"
+    needs: validation
     permissions:
       security-events: write
-      packages: read
-      actions: read
       contents: read
-
+      packages: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
-          build-mode: none
           queries: security-extended
           config: |
             query-filter:
@@ -110,194 +68,124 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:javascript-typescript"
 
-  Anchore:
-    needs: [ToDo]
+  container-scanning:
+    name: "Container Security"
     runs-on: ubuntu-24.04
-    name: "Anchore"
+    needs: validation
     permissions:
       security-events: write
-      packages: read
-      actions: read
       contents: read
-    steps:
-      - name: Set up Grype installation path
-        run: echo "$HOME/bin" >> $GITHUB_PATH
-
-      - name: Setup python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Download Grype
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b $HOME/bin
-
-      - uses: actions/checkout@v4
-
-      - name: Build the Container image
-        run: docker build . --file docker/Dockerfile-base --tag localbuild/testimage:latest
-
-      - name: Run Grype test
-        run: grype -o sarif localbuild/testimage:latest > results.sarif
-
-      - name: Upload Anchore scan SARIF report
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ./results.sarif
-
-  test-building:
-    needs: [ToDo]
-    runs-on: ubuntu-24.04
-    name: "Test building"
-    permissions:
-      security-events: write
-      packages: read
-      actions: read
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
+      - name: Download Grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b $HOME/bin
+          echo "$HOME/bin" >> $GITHUB_PATH
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Build Docker image
+        run: docker build . --file docker/Dockerfile-base --tag localbuild/testimage:latest
+
+      - name: Run vulnerability scan
+        run: grype -o sarif localbuild/testimage:latest > results.sarif
+
+      - name: Upload SARIF report
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./results.sarif
+
+  build-test:
+    name: "Docker Build Test"
+    runs-on: ubuntu-24.04
+    needs: validation
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Github Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate Docker tags
-        uses: docker/metadata-action@v5
-        id: metadata
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,enable=true,priority=200,prefix=,suffix=,value=${{ github.sha }}
-
-      - name: Build and Push Docker Images
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile-base
           platforms: linux/amd64,linux/arm64
           push: false
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  build-dev:
-    name: "Dev-build"
-    permissions:
-      security-events: read
-      packages: write
-      actions: read
-      contents: read
+  todo-management:
+    name: "TODO Issue Management"
     runs-on: ubuntu-24.04
-    if: github.ref_name == 'dev'
-    needs: [test-building, Anchore, CodeQL]
+    needs: validation
+    permissions:
+      contents: write
+      issues: write
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup python
-        uses: actions/setup-python@v5
+      - name: Process TODOs
+        uses: alstr/todo-to-issue-action@v5
         with:
-          python-version: "3.13"
+          INSERT_ISSUE_URLS: "true"
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if [[ $(git status --porcelain) ]]; then
+            git commit -m "Automatically process TODOs [skip ci]"
+            git push
+          fi
+
+  deployment:
+    name: "Docker Deployment"
+    runs-on: ubuntu-24.04
+    needs: [security-analysis, container-scanning, build-test]
+    permissions:
+      packages: write
+      contents: read
+    strategy:
+      matrix:
+        type: [dev, pre-release]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Github Container Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Docker tags
+      - name: Determine tags
+        id: tags
         uses: docker/metadata-action@v5
-        id: metadata
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,enable=true,priority=200,prefix=,suffix=,value=nightly
-          flavor: |
-            latest=false
+            type=raw,enable=${{ matrix.type == 'dev' && github.ref_name == 'dev' || matrix.type == 'pre-release' && github.event.release.prerelease }},value=${{ matrix.type == 'dev' && 'nightly' || 'pre' }}
 
-      - name: Build and Push Docker Images
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile-dev
           platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  build-pre-release:
-    name: "Pre-Release-build"
-    permissions:
-      security-events: read
-      packages: write
-      actions: read
-      contents: read
-    runs-on: ubuntu-24.04
-    if: "github.event.release.prerelease"
-    needs: [test-building, Anchore, CodeQL]
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Github Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
-
-      - name: Generate Docker tags
-        uses: docker/metadata-action@v5
-        id: metadata
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,enable=true,priority=200,prefix=,suffix=,value=pre
-          flavor: |
-            latest=false
-
-      - name: Build and Push Docker Images
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/Dockerfile-dev
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: ${{ steps.tags.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

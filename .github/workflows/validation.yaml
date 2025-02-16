@@ -155,19 +155,33 @@ jobs:
       contents: read
     strategy:
       matrix:
-        type: [dev, pre-release, release]
-    if: >
-      (matrix.type == 'dev' && github.ref_name == 'dev')
-      || (matrix.type == 'pre-release' && github.event_name == 'release' && github.event.release.prerelease)
-      || (matrix.type == 'release' && github.event_name == 'release' && !github.event.release.prerelease)
+        include:
+          - type: dev
+            # Only enable when pushing to the dev branch
+            enabled: ${{ github.ref_name == 'dev' }}
+          - type: pre-release
+            # Only enable when a release event is published and it's a prerelease
+            enabled: ${{ github.event_name == 'release' && github.event.release.prerelease }}
+          - type: release
+            # Only enable when a release event is published and it's NOT a prerelease
+            enabled: ${{ github.event_name == 'release' && !github.event.release.prerelease }}
     steps:
+      - name: Exit early if deployment is not enabled
+        if: ${{ !matrix.enabled }}
+        run: |
+          echo "Skipping deployment for matrix type '${{ matrix.type }}' because conditions are not met."
+          exit 0
+
       - name: Checkout repository
+        if: ${{ matrix.enabled }}
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
+        if: ${{ matrix.enabled }}
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
+        if: ${{ matrix.enabled }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -175,14 +189,16 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Determine tags
+        if: ${{ matrix.enabled }}
         id: tags
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,enable=${{ matrix.type == 'dev' && github.ref_name == 'dev' || matrix.type == 'pre-release' && github.event_name == 'release' && github.event.release.prerelease || matrix.type == 'release' && github.event_name == 'release' && !github.event.release.prerelease }},value=${{ matrix.type == 'dev' && 'nightly' || matrix.type == 'pre-release' && 'pre' || matrix.type == 'release' && 'latest' }}
+            type=raw,value=${{ matrix.type == 'dev' && 'nightly' || matrix.type == 'pre-release' && 'pre' || matrix.type == 'release' && 'latest' }}
 
       - name: Build and push
+        if: ${{ matrix.enabled }}
         uses: docker/build-push-action@v6
         with:
           context: .

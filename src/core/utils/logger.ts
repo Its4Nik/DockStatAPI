@@ -2,7 +2,7 @@ import { createLogger, format, transports } from "winston";
 import Transport from "winston-transport";
 import path from "path";
 import { dbFunctions } from "../database/repository";
-import chalk from "chalk";
+import chalk, { ChalkInstance } from "chalk";
 
 const fileLineFormat = format((info) => {
   try {
@@ -48,7 +48,7 @@ export const logger = createLogger({
     new transports.Console({
       format: format.combine(
         format.printf(({ level, message, file, line }) => {
-          const levelColors: { [key: string]: chalk.Chalk } = {
+          const levelColors: { [key: string]: ChalkInstance } = {
             error: chalk.red.bold,
             warn: chalk.yellow.bold,
             info: chalk.green.bold,
@@ -57,13 +57,13 @@ export const logger = createLogger({
             silly: chalk.magenta.bold,
           };
 
-          const paddedLevel = level.padEnd(5).toUpperCase();
+          const paddedLevel = level.toUpperCase();
           const coloredLevel = (levelColors[level] || chalk.white)(paddedLevel);
 
           const coloredContext = chalk.cyan(`${file}:${line}`);
           const coloredMessage = chalk.gray(message);
 
-          return `[ ${coloredContext.padEnd(22)} ] ${coloredLevel} - ${coloredMessage}`;
+          return `${coloredLevel} [ ${coloredContext} ] - ${coloredMessage}`;
         }),
       ),
     }),

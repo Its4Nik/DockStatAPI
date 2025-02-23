@@ -3,11 +3,13 @@
   "version": "2.1.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "docker compose -f ./docker/docker-compose.dev.yaml up -d && bun run --watch src/index.ts"
   },
   "dependencies": {
     "@elysiajs/swagger": "^1.2.2",
+    "@types/dockerode": "^3.3.34",
     "chalk": "^5.4.1",
+    "dockerode": "^4.0.4",
     "elysia": "latest",
     "winston": "^3.17.0",
     "winston-transport": "^4.9.0"
@@ -15,5 +17,8 @@
   "devDependencies": {
     "bun-types": "latest"
   },
-  "module": "src/index.js"
+  "module": "src/index.js",
+  "trustedDependencies": [
+    "protobufjs"
+  ]
 }

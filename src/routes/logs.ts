@@ -27,4 +27,30 @@ export const backendLogs = new Elysia({ prefix: "/logs" })
       logger.error("Failed to retrieve logs");
       return { error: "Failed to retrieve logs" };
     }
+  })
+
+  .delete("/", async ({ set }) => {
+    try {
+      set.status = 200;
+      set.headers["Content-Type"] = "application/json";
+      dbFunctions.clearAllLogs();
+      return { success: true };
+    } catch (error) {
+      set.status = 500;
+      logger.error("Could not delete all logs,", error);
+      return { error: "Could not delete all logs" };
+    }
+  })
+
+  .delete("/:level", async ({ params: { level }, set }) => {
+    try {
+      dbFunctions.clearLogsByLevel(level);
+      set.headers["Content-Type"] = "application/json";
+      logger.debug(`Cleared all logs with level: ${level}`);
+      return { success: true };
+    } catch (error) {
+      set.status = 500;
+      logger.error("Could not clear logs with level", level, ",", error);
+      return { error: "Failed to retrieve logs" };
+    }
   });

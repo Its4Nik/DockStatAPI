@@ -11,6 +11,7 @@ import { logger } from "~/core/utils/logger";
 import { responseHandler } from "~/core/utils/respone-handler";
 import type { DockerHost } from "~/typings/docker";
 import split2 from "split2";
+import type { Readable } from "stream";
 
 const set: { headers: HTTPHeaders; status?: number | keyof StatusMap } = {
   headers: {},
@@ -26,6 +27,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
       // Track if the WebSocket is open
       (socket as any).isOpen = true;
       (socket as any).streams = [];
+      (socket as any).heartbeat = null; // Add heartbeat reference
 
       logger.debug(`Opened WebSocket (${socket.id})`);
 
@@ -48,6 +50,15 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
         return;
       }
 
+      // Add heartbeat using WebSocket protocol-level ping
+      (socket as any).heartbeat = setInterval(() => {
+        if (!(socket as any).isOpen) {
+          clearInterval((socket as any).heartbeat);
+          return;
+        }
+        socket.ping(); // Use WebSocket protocol ping
+      }, 30000);
+
       for (const host of hosts) {
         if (!(socket as any).isOpen) break;
 
@@ -64,7 +75,6 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
           );
 
           for (const containerInfo of containers) {
-            // Check if WebSocket is still open before processing each container
             if (!(socket as any).isOpen) break;
 
             logger.debug(
@@ -75,22 +85,30 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
               logger.debug(
                 `Starting stats stream for container ${containerInfo.Id} on host ${host.name}`,
               );
-              const statsStream = await container.stats({ stream: true });
+              const statsStream = (await container.stats({
+                stream: true,
+              })) as Readable;
+              const splitStream = split2();
 
-              // Immediately destroy stream if WebSocket closed while setting up
-              if (!(socket as any).isOpen) {
-                statsStream.pause();
-                statsStream.unpipe();
-                continue;
-              }
+              // Store both streams for cleanup
+              (socket as any).streams.push({ statsStream, splitStream });
 
-              // Save stream for cleanup on socket close
-              (socket as any).streams.push(statsStream);
-
-              // Use split2 to process NDJSON lines
+              // Handle stream lifecycle
               statsStream
-                .pipe(split2())
+                .on("close", () => {
+                  logger.debug(`Stats stream closed for ${containerInfo.Id}`);
+                  splitStream.destroy();
+                })
+                .on("end", () => {
+                  logger.debug(`Stats stream ended for ${containerInfo.Id}`);
+                  splitStream.destroy();
+                });
+
+              // Process data
+              statsStream
+                .pipe(splitStream)
                 .on("data", (line: string) => {
+                  if (socket.readyState !== 1) return; // 1 = OPEN state
                   if (!line) return;
                   try {
                     const stats = JSON.parse(line);
@@ -108,7 +126,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
                       memoryUsage,
                     };
                     socket.send(JSON.stringify(data));
-                    logger.debug(`Parsing data`);
+                    logger.debug(`Parsing data on Socket ${socket.id}`);
                   } catch (parseErr: any) {
                     logger.error(
                       `Failed to parse stats for container ${containerInfo.Id} on host ${host.name}: ${parseErr.message}`,
@@ -125,17 +143,17 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
                     `Stats stream error for container ${containerInfo.Id}`,
                     500,
                   );
-                  socket.send(
-                    JSON.stringify({
-                      hostId: host.name,
-                      containerId: containerInfo.Id,
-                      error: errResponse.error,
-                    }),
-                  );
-                  statsStream.removeAllListeners();
+                  if (socket.readyState === 1) {
+                    socket.send(
+                      JSON.stringify({
+                        hostId: host.name,
+                        containerId: containerInfo.Id,
+                        error: errResponse.error,
+                      }),
+                    );
+                  }
+                  statsStream.destroy();
                 });
-
-              statsStream.resume();
             } catch (streamErr: any) {
               logger.error(
                 `Failed to start stats stream for container ${containerInfo.Id} on host ${host.name}: ${streamErr.message}`,
@@ -146,13 +164,15 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
                 `Failed to start stats stream for container ${containerInfo.Id}`,
                 500,
               );
-              socket.send(
-                JSON.stringify({
-                  hostId: host.name,
-                  containerId: containerInfo.Id,
-                  error: errResponse.error,
-                }),
-              );
+              if (socket.readyState === 1) {
+                socket.send(
+                  JSON.stringify({
+                    hostId: host.name,
+                    containerId: containerInfo.Id,
+                    error: errResponse.error,
+                  }),
+                );
+              }
             }
           }
         } catch (err: any) {
@@ -165,37 +185,53 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
             `Failed to list containers for host ${host.name}`,
             500,
           );
-          socket.send(
-            JSON.stringify({
-              hostId: host.name,
-              error: errResponse.error,
-            }),
-          );
+          if (socket.readyState === 1) {
+            socket.send(
+              JSON.stringify({
+                hostId: host.name,
+                error: errResponse.error,
+              }),
+            );
+          }
         }
       }
     },
 
+    message(socket, message) {
+      // Handle pong responses
+      if (message === "pong") return;
+    },
+
     close(socket, code, reason) {
-      //socket.isOpen = false;
+      // Atomic closure flag
+      const wasOpen = (socket as any).isOpen;
+      (socket as any).isOpen = false;
 
-      socket.close(1000);
-      //const streams = (socket as any).streams;
-      //if (streams?.length) {
-      //  streams.forEach((stream: NodeJS.ReadableStream) => {
-      //    try {
-      //      logger.debug(`Destroying stats stream`);
-      //      stream.pause();
-      //      stream.unpipe();
-      //    } catch (err) {
-      //      logger.error(`Error destroying stream: ${err}`);
-      //    }
-      //  });
-      //  (socket as any).streams = [];
-      //}
+      // Immediate heartbeat cleanup
+      clearInterval((socket as any).heartbeat);
 
-      logger.info(
-        `Closed WebSocket (${socket.id}) - Code: ${code} - Reason: ${reason}`,
-      );
+      // Force-close streams using destructor pattern
+      const streams = (socket as any).streams || [];
+      streams.forEach(({ statsStream, splitStream }) => {
+        try {
+          // Immediate pipeline breakdown
+          statsStream.unpipe(splitStream);
+          statsStream.destroy(new Error("WebSocket closed"));
+          splitStream.destroy(new Error("WebSocket closed"));
+
+          // Remove all potential listeners
+          statsStream.removeAllListeners();
+          splitStream.removeAllListeners();
+        } catch (err) {
+          logger.error(`Stream cleanup error: ${err}`);
+        }
+      });
+
+      if (wasOpen) {
+        logger.info(
+          `Closed WebSocket (${socket.id}) - Code: ${code} - Reason: ${reason}`,
+        );
+      }
     },
   },
 );

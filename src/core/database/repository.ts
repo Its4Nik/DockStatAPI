@@ -1,6 +1,8 @@
 import Database from "bun:sqlite";
 import { logger } from "~/core/utils/logger";
 import { typeCheck } from "~/core/utils/type-check";
+import { config } from "~/typings/database";
+import type { DockerHost } from "~/typings/docker";
 
 const db = new Database("dockstatapi.db");
 
@@ -10,15 +12,11 @@ export const dbFunctions = {
       CREATE TABLE IF NOT EXISTS docker_hosts (
         name TEXT,
         url TEXT,
-        poll_interval INTEGER
+        secure BOOLEAN
       );
 
-      CREATE TABLE IF NOT EXISTS container_metrics (
-        host_id TEXT,
-        container_id TEXT,
-        cpu REAL,
-        memory REAL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+      CREATE TABLE IF NOT EXISTS config (
+        polling_rate NUMBER
       );
 
       CREATE TABLE IF NOT EXISTS backend_log_entries (
@@ -29,54 +27,46 @@ export const dbFunctions = {
         line NUMBER
       );
     `);
+
+    const configRow = db
+      .prepare(`SELECT COUNT(*) AS count FROM config`)
+      .get() as { count: number };
+    if (configRow.count === 0) {
+      const stmt = db.prepare(
+        `
+        INSERT INTO config (polling_rate) VALUES (5)
+        `,
+      );
+
+      stmt.run();
+    }
   },
 
-  addDockerHost(hostId: string, url: string, pollInterval: number) {
+  addDockerHost(hostId: string, url: string, secure: boolean) {
     if (
       !typeCheck(hostId, "string") ||
       !typeCheck(url, "string") ||
-      !typeCheck(pollInterval, "number")
+      !typeCheck(secure, "boolean")
     ) {
       logger.crit("Invalid parameter types for addDockerHost");
       throw new TypeError("Invalid parameter types for addDockerHost");
     }
 
     const stmt = db.prepare(`
-          INSERT INTO docker_hosts (name, url, poll_interval)
+          INSERT INTO docker_hosts (name, url, secure)
           VALUES (?, ?, ?)
         `);
-    return stmt.run(hostId, url, pollInterval);
+    return stmt.run(hostId, url, secure);
   },
 
-  getDockerHosts() {
+  getDockerHosts(): DockerHost[] {
     const stmt = db.prepare(`
-      SELECT name, url, poll_interval
+      SELECT name, url, secure
       FROM docker_hosts
       ORDER BY name DESC
     `);
-    return stmt.all();
-  },
-
-  insertMetric(hostId: string, metric: any) {
-    if (!typeCheck(hostId, "string") || !typeCheck(metric, "object")) {
-      logger.crit("Invalid parameter types for insertMetric");
-      throw new TypeError("Invalid parameter types for insertMetric");
-    }
-
-    if (
-      !typeCheck(metric.containerId, "string") ||
-      !typeCheck(metric.cpu, "number") ||
-      !typeCheck(metric.memory, "number")
-    ) {
-      logger.crit("Invalid metric object structure");
-      throw new TypeError("Invalid metric object structure");
-    }
-
-    const stmt = db.prepare(`
-        INSERT INTO container_metrics (host_id, container_id, cpu, memory)
-        VALUES (?, ?, ?, ?)
-      `);
-    return stmt.run(hostId, metric.containerId, metric.cpu, metric.memory);
+    const data = stmt.all();
+    return data as DockerHost[];
   },
 
   addLogEntry: (
@@ -126,11 +116,11 @@ export const dbFunctions = {
     return stmt.all(level);
   },
 
-  updateDockerHost(name: string, url: string, pollInterval: number) {
+  updateDockerHost(name: string, url: string, secure: boolean) {
     if (
       !typeCheck(name, "string") ||
       !typeCheck(url, "string") ||
-      !typeCheck(pollInterval, "number")
+      !typeCheck(secure, "boolean")
     ) {
       logger.crit("Invalid parameter types for updateDockerHost");
       throw new TypeError("Invalid parameter types for updateDockerHost");
@@ -138,10 +128,10 @@ export const dbFunctions = {
 
     const stmt = db.prepare(`
         UPDATE docker_hosts
-        SET url = ?, poll_interval = ?
+        SET url = ?, secure = ?
         WHERE name = ?
       `);
-    return stmt.run(url, pollInterval, name);
+    return stmt.run(url, secure, name);
   },
 
   deleteDockerHost(name: string) {
@@ -175,6 +165,29 @@ export const dbFunctions = {
         WHERE level = ?
       `);
     return stmt.run(level);
+  },
+
+  updateConfig(polling_rate: number) {
+    if (!typeCheck(polling_rate, "number")) {
+      logger.crit("Invalid parameter type for updateConfig");
+      throw new TypeError("Polling rate must be a number!");
+    }
+
+    const stmt = db.prepare(`
+        UPDATE config
+        SET polling_rate = ?
+      `);
+
+    return stmt.run(polling_rate);
+  },
+
+  getConfig() {
+    const stmt = db.prepare(`
+        SELECT distinct(polling_rate)
+        FROM config
+      `);
+
+    return stmt.all();
   },
 };
 

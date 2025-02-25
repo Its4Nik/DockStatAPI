@@ -1,7 +1,7 @@
 import { createLogger, format, transports } from "winston";
 import Transport from "winston-transport";
 import path from "path";
-import { dbFunctions } from "../database/repository";
+import { dbFunctions } from "~/core/database/repository";
 import chalk, { ChalkInstance } from "chalk";
 
 const fileLineFormat = format((info) => {

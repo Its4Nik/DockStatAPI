@@ -1,7 +1,7 @@
 interface DockerHost {
   name: string;
   url: string;
-  poll_interval: number;
+  secure: boolean;
 }
 
 interface ContainerInfo {

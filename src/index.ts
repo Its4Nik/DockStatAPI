@@ -5,7 +5,9 @@ import { loadPlugins } from "~/core/plugins/loader";
 import { logger } from "~/core/utils/logger";
 import { dockerRoutes } from "~/routes/docker-manager";
 import { dockerStatsRoutes } from "~/routes/docker-stats";
-import { backendLogs } from "./routes/logs";
+import { backendLogs } from "~/routes/logs";
+import { dockerWebsocketRoutes } from "~/routes/docker-websocket";
+import { apiConfigRoutes } from "~/routes/api-config";
 
 dbFunctions.init();
 
@@ -18,20 +20,37 @@ const app = new Elysia()
           version: "2.1.0",
           description: "Docker monitoring API with plugin support",
         },
+        tags: [
+          {
+            name: "Statistics",
+            description:
+              "All endpoints for fetching statistics of hosts / containers",
+          },
+          {
+            name: "Management",
+            description: "Various endpoints for managing DockStatAPI",
+          },
+          {
+            name: "Utils",
+            description: "Various utilities which might be useful",
+          },
+        ],
       },
     }),
   )
   .use(dockerRoutes)
   .use(dockerStatsRoutes)
   .use(backendLogs)
-  .get("/health", () => ({ status: "healthy" }));
+  .use(dockerWebsocketRoutes)
+  .use(apiConfigRoutes)
+  .get("/health", () => ({ status: "healthy" }), { tags: ["Utils"] });
 
 async function startServer() {
   try {
     await loadPlugins("./plugins");
 
     app.listen(3000, ({ hostname, port }) => {
-      logger.info(`DockStat is running at http://${hostname}:${port}`);
+      logger.info(`DockStatAPI is running at http://${hostname}:${port}`);
       logger.info(
         `Swagger API Documentation available at http://${hostname}:${port}/swagger`,
       );

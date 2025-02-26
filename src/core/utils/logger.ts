@@ -1,7 +1,5 @@
 import { createLogger, format, transports } from "winston";
-import Transport from "winston-transport";
 import path from "path";
-import { dbFunctions } from "~/core/database/repository";
 import chalk, { ChalkInstance } from "chalk";
 
 const fileLineFormat = format((info) => {
@@ -29,44 +27,29 @@ const fileLineFormat = format((info) => {
   return info;
 });
 
-class SQLiteTransport extends Transport {
-  constructor(opts?: Transport.TransportStreamOptions) {
-    super(opts);
-  }
-
-  log(info: any, callback: () => void) {
-    const { level, message, file, line } = info;
-    dbFunctions.addLogEntry(level, message, file || "unknown", line || 0);
-    callback();
-  }
-}
-
 export const logger = createLogger({
   level: "debug",
-  format: format.combine(fileLineFormat(), format.json()),
-  transports: [
-    new transports.Console({
-      format: format.combine(
-        format.printf(({ level, message, file, line }) => {
-          const levelColors: { [key: string]: ChalkInstance } = {
-            error: chalk.red.bold,
-            warn: chalk.yellow.bold,
-            info: chalk.green.bold,
-            debug: chalk.blue.bold,
-            verbose: chalk.cyan.bold,
-            silly: chalk.magenta.bold,
-          };
+  format: format.combine(
+    format.timestamp({ format: "DD/MM HH:mm:ss" }),
+    fileLineFormat(),
+    format.printf(({ timestamp, level, message, file, line }) => {
+      const levelColors: { [key: string]: ChalkInstance } = {
+        error: chalk.red.bold,
+        warn: chalk.yellow.bold,
+        info: chalk.green.bold,
+        debug: chalk.blue.bold,
+        verbose: chalk.cyan.bold,
+        silly: chalk.magenta.bold,
+      };
 
-          const paddedLevel = level.toUpperCase();
-          const coloredLevel = (levelColors[level] || chalk.white)(paddedLevel);
+      const paddedLevel = level.toUpperCase().padEnd(5);
+      const coloredLevel = (levelColors[level] || chalk.white)(paddedLevel);
+      const coloredContext = chalk.cyan(`${file}:${line}`);
+      const coloredMessage = chalk.gray(message);
+      const coloredTimestamp = chalk.yellow(`${timestamp}`);
 
-          const coloredContext = chalk.cyan(`${file}:${line}`);
-          const coloredMessage = chalk.gray(message);
-
-          return `${coloredLevel} [ ${coloredContext} ] - ${coloredMessage}`;
-        }),
-      ),
+      return `${coloredLevel} [ ${coloredTimestamp} ] - ${coloredMessage} - [ ${coloredContext} ]`;
     }),
-    new SQLiteTransport(),
-  ],
+  ),
+  transports: [new transports.Console()],
 });

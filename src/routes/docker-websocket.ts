@@ -12,6 +12,8 @@ import { responseHandler } from "~/core/utils/respone-handler";
 import type { DockerHost } from "~/typings/docker";
 import split2 from "split2";
 import type { Readable } from "stream";
+import type internal from "stream";
+import type { streams } from "~/typings/websocket";
 
 const set: { headers: HTTPHeaders; status?: number | keyof StatusMap } = {
   headers: {},
@@ -104,7 +106,6 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
                   splitStream.destroy();
                 });
 
-              // Process data
               statsStream
                 .pipe(splitStream)
                 .on("data", (line: string) => {
@@ -126,7 +127,6 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
                       memoryUsage,
                     };
                     socket.send(JSON.stringify(data));
-                    logger.debug(`Parsing data on Socket ${socket.id}`);
                   } catch (parseErr: any) {
                     logger.error(
                       `Failed to parse stats for container ${containerInfo.Id} on host ${host.name}: ${parseErr.message}`,
@@ -137,39 +137,28 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
                   logger.error(
                     `Stats stream error for container ${containerInfo.Id} on host ${host.name}: ${err.message}`,
                   );
-                  const errResponse = responseHandler.error(
-                    set,
-                    err.message,
-                    `Stats stream error for container ${containerInfo.Id}`,
-                    500,
-                  );
                   if (socket.readyState === 1) {
                     socket.send(
                       JSON.stringify({
                         hostId: host.name,
                         containerId: containerInfo.Id,
-                        error: errResponse.error,
+                        error: `Stats stream error for container ${containerInfo.Id} on host ${host.name}`,
                       }),
                     );
                   }
                   statsStream.destroy();
                 });
             } catch (streamErr: any) {
+              const errMsg = `Failed to start stats stream for container ${containerInfo.Id}`;
               logger.error(
                 `Failed to start stats stream for container ${containerInfo.Id} on host ${host.name}: ${streamErr.message}`,
-              );
-              const errResponse = responseHandler.error(
-                set,
-                streamErr.message,
-                `Failed to start stats stream for container ${containerInfo.Id}`,
-                500,
               );
               if (socket.readyState === 1) {
                 socket.send(
                   JSON.stringify({
                     hostId: host.name,
                     containerId: containerInfo.Id,
-                    error: errResponse.error,
+                    error: errMsg,
                   }),
                 );
               }
@@ -198,12 +187,11 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
     },
 
     message(socket, message) {
-      // Handle pong responses
       if (message === "pong") return;
     },
 
     close(socket, code, reason) {
-      // Atomic closure flag
+      logger.info(`Closing SplitStream and WebSocket (${socket.id})`);
       const wasOpen = (socket as any).isOpen;
       (socket as any).isOpen = false;
 
@@ -211,7 +199,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
       clearInterval((socket as any).heartbeat);
 
       // Force-close streams using destructor pattern
-      const streams = (socket as any).streams || [];
+      const streams: streams[] = (socket as any).streams || [];
       streams.forEach(({ statsStream, splitStream }) => {
         try {
           // Immediate pipeline breakdown

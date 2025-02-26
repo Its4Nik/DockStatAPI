@@ -31,7 +31,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
       (socket as any).streams = [];
       (socket as any).heartbeat = null; // Add heartbeat reference
 
-      logger.debug(`Opened WebSocket (${socket.id})`);
+      logger.info(`Opened WebSocket (${socket.id})`);
 
       try {
         hosts = dbFunctions.getDockerHosts();

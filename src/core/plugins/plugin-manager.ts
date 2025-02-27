@@ -1,4 +1,5 @@
 import { EventEmitter } from "events";
+import { logger } from "../utils/logger";
 
 export interface Plugin {
   name: string;
@@ -11,13 +12,21 @@ export class PluginManager extends EventEmitter {
   private plugins: Map<string, Plugin> = new Map();
 
   register(plugin: Plugin) {
-    this.plugins.set(plugin.name, plugin);
-    console.log(`Registered plugin: ${plugin.name}`);
+    try {
+      this.plugins.set(plugin.name, plugin);
+      logger.debug(`Registered plugin: ${plugin.name}`);
+    } catch (error) {
+      logger.error(
+        `Registering plugin ${plugin.name} failed: ${error as string}`,
+      );
+    }
   }
 
   unregister(name: string) {
     this.plugins.delete(name);
   }
+
+  // Trigger plugin flows:
 
   handleContainerStart(containerInfo: any) {
     this.plugins.forEach((plugin) => {

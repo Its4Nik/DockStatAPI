@@ -31,9 +31,13 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
     "/update",
     async ({ set, body }) => {
       try {
-        const { polling_rate } = body;
+        const { polling_rate, fetching_interval, keep_data_for } = body;
         set.headers["Content-Type"] = "application/json";
-        dbFunctions.updateConfig(polling_rate);
+        dbFunctions.updateConfig(
+          polling_rate,
+          fetching_interval,
+          keep_data_for,
+        );
         return responseHandler.ok(set, "Updated DockStatAPI config");
       } catch (error) {
         return responseHandler.error(
@@ -46,6 +50,8 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
     {
       body: t.Object({
         polling_rate: t.Number(),
+        fetching_interval: t.Number(),
+        keep_data_for: t.Number(),
       }),
       tags: ["Management"],
     },

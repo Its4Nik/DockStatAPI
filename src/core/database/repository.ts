@@ -1,7 +1,5 @@
 import Database from "bun:sqlite";
 import { logger } from "~/core/utils/logger";
-import { typeCheck } from "~/core/utils/type-check";
-import { config } from "~/typings/database";
 import type { DockerHost } from "~/typings/docker";
 
 const db = new Database("dockstatapi.db");
@@ -15,8 +13,22 @@ export const dbFunctions = {
         secure BOOLEAN
       );
 
+      CREATE TABLE IF NOT EXISTS container_stats (
+        id TEXT,
+        hostId TEXT,
+        name TEXT,
+        image TEXT,
+        status TEXT,
+        state TEXT,
+        cpu_usage FLOAT,
+        memory_usage FLOAT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS config (
-        polling_rate NUMBER
+        polling_rate NUMBER,
+        keep_data_for NUMBER,
+        fetching_interval NUMBER
       );
 
       CREATE TABLE IF NOT EXISTS backend_log_entries (
@@ -28,25 +40,42 @@ export const dbFunctions = {
       );
     `);
 
+    /*
+     * Default values:
+     * - Websocket polling interval 5 seconds
+     * - Data retention value for the database (logs and container stats) 7 days
+     * - Data fetcher for the Database: 5 minutes
+     */
     const configRow = db
       .prepare(`SELECT COUNT(*) AS count FROM config`)
       .get() as { count: number };
     if (configRow.count === 0) {
       const stmt = db.prepare(
         `
-        INSERT INTO config (polling_rate) VALUES (5)
+        INSERT INTO config (polling_rate, keep_data_for, fetching_interval) VALUES (5, 7, 5)
         `,
       );
-
       stmt.run();
+    }
+
+    const hostRow = db
+      .prepare(`SELECT COUNT(*) AS count FROM docker_hosts WHERE name = ?`)
+      .get("Localhost") as { count: number };
+    if (hostRow.count === 0) {
+      const stmt = db.prepare(
+        `
+        INSERT INTO docker_hosts (name, url, secure) VALUES (?, ?, ?)
+        `,
+      );
+      stmt.run("Localhost", "localhost:2375", false);
     }
   },
 
   addDockerHost(hostId: string, url: string, secure: boolean) {
     if (
-      !typeCheck(hostId, "string") ||
-      !typeCheck(url, "string") ||
-      !typeCheck(secure, "boolean")
+      typeof hostId !== "string" ||
+      typeof url !== "string" ||
+      typeof secure !== "boolean"
     ) {
       logger.crit("Invalid parameter types for addDockerHost");
       throw new TypeError("Invalid parameter types for addDockerHost");
@@ -76,10 +105,10 @@ export const dbFunctions = {
     line: number,
   ) => {
     if (
-      !typeCheck(level, "string") ||
-      !typeCheck(message, "string") ||
-      !typeCheck(file_name, "string") ||
-      !typeCheck(line, "number")
+      typeof level !== "string" ||
+      typeof message !== "string" ||
+      typeof file_name !== "string" ||
+      typeof line !== "number"
     ) {
       logger.crit("Invalid parameter types for addLogEntry");
       throw new TypeError("Invalid parameter types for addLogEntry");
@@ -102,7 +131,7 @@ export const dbFunctions = {
   },
 
   getLogsByLevel(level: string) {
-    if (!typeCheck(level, "string")) {
+    if (typeof level !== "string") {
       logger.crit("Level parameter must be a string");
       throw new TypeError("Level parameter must be a string");
     }
@@ -118,9 +147,9 @@ export const dbFunctions = {
 
   updateDockerHost(name: string, url: string, secure: boolean) {
     if (
-      !typeCheck(name, "string") ||
-      !typeCheck(url, "string") ||
-      !typeCheck(secure, "boolean")
+      typeof name !== "string" ||
+      typeof url !== "string" ||
+      typeof secure !== "boolean"
     ) {
       logger.crit("Invalid parameter types for updateDockerHost");
       throw new TypeError("Invalid parameter types for updateDockerHost");
@@ -135,7 +164,7 @@ export const dbFunctions = {
   },
 
   deleteDockerHost(name: string) {
-    if (!typeCheck(name, "string")) {
+    if (typeof name !== "string") {
       logger.crit("Invalid parameter type for deleteDockerHost");
       throw new TypeError("Name parameter must be a string");
     }
@@ -155,7 +184,7 @@ export const dbFunctions = {
   },
 
   clearLogsByLevel(level: string) {
-    if (!typeCheck(level, "string")) {
+    if (typeof level !== "string") {
       logger.crit("Invalid parameter type for clearLogsByLevel");
       throw new TypeError("Level parameter must be a string");
     }
@@ -167,27 +196,97 @@ export const dbFunctions = {
     return stmt.run(level);
   },
 
-  updateConfig(polling_rate: number) {
-    if (!typeCheck(polling_rate, "number")) {
-      logger.crit("Invalid parameter type for updateConfig");
-      throw new TypeError("Polling rate must be a number!");
+  updateConfig(
+    polling_rate: number,
+    fetching_interval: number,
+    keep_data_for: number,
+  ) {
+    if (
+      typeof polling_rate !== "number" ||
+      typeof fetching_interval !== "number" ||
+      typeof keep_data_for !== "number"
+    ) {
+      logger.crit("Invalid parameter types for updateConfig");
+      throw new TypeError("Invalid parameter types for updateConfig");
     }
 
     const stmt = db.prepare(`
-        UPDATE config
-        SET polling_rate = ?
-      `);
+      UPDATE config
+      SET polling_rate = ?,
+          fetching_interval = ?,
+          keep_data_for = ?
+    `);
 
-    return stmt.run(polling_rate);
+    return stmt.run(polling_rate, fetching_interval, keep_data_for);
   },
 
   getConfig() {
     const stmt = db.prepare(`
-        SELECT distinct(polling_rate)
+        SELECT polling_rate, keep_data_for, fetching_interval
         FROM config
       `);
 
     return stmt.all();
+  },
+
+  // Stats:
+  addContainerStats(
+    id: string,
+    hostId: string,
+    name: string,
+    image: string,
+    status: string,
+    state: string,
+    cpu_usage: number,
+    memory_usage: number,
+  ) {
+    if (
+      typeof id !== "string" ||
+      typeof hostId !== "string" ||
+      typeof name !== "string" ||
+      typeof image !== "string" ||
+      typeof status !== "string" ||
+      typeof state !== "string" ||
+      typeof cpu_usage !== "number" ||
+      typeof memory_usage !== "number"
+    ) {
+      logger.crit("Invalid parameter types for addContainerStats");
+      throw new TypeError("Invalid parameter types for addContainerStats");
+    }
+
+    const stmt = db.prepare(`
+      INSERT INTO container_stats (id, hostId, name, image, status, state, cpu_usage, memory_usage)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    return stmt.run(
+      id,
+      hostId,
+      name,
+      image,
+      status,
+      state,
+      cpu_usage,
+      memory_usage,
+    );
+  },
+
+  deleteOldData(days: number) {
+    if (typeof days !== "number") {
+      logger.crit("Invalid parameter type for deleteOldData");
+      throw new TypeError("Days parameter must be a number");
+    }
+
+    const deleteContainerStmt = db.prepare(`
+      DELETE FROM container_stats
+      WHERE timestamp < datetime('now', '-' || ? || ' days')
+    `);
+    deleteContainerStmt.run(days);
+
+    const deleteLogsStmt = db.prepare(`
+      DELETE FROM backend_log_entries
+      WHERE timestamp < datetime('now', '-' || ? || ' days')
+    `);
+    deleteLogsStmt.run(days);
   },
 };
 

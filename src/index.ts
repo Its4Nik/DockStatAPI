@@ -8,10 +8,13 @@ import { dockerStatsRoutes } from "~/routes/docker-stats";
 import { backendLogs } from "~/routes/logs";
 import { dockerWebsocketRoutes } from "~/routes/docker-websocket";
 import { apiConfigRoutes } from "~/routes/api-config";
+import { setSchedules } from "~/core/docker/scheduler";
+
+logger.info("Starting server...");
 
 dbFunctions.init();
 
-const app = new Elysia()
+const DockStatAPI = new Elysia()
   .use(
     swagger({
       documentation: {
@@ -47,9 +50,9 @@ const app = new Elysia()
 
 async function startServer() {
   try {
-    await loadPlugins("./plugins");
+    await loadPlugins("./src/plugins");
 
-    app.listen(3000, ({ hostname, port }) => {
+    DockStatAPI.listen(3000, ({ hostname, port }) => {
       logger.info(`DockStatAPI is running at http://${hostname}:${port}`);
       logger.info(
         `Swagger API Documentation available at http://${hostname}:${port}/swagger`,
@@ -61,4 +64,6 @@ async function startServer() {
   }
 }
 
-startServer();
+await startServer();
+await setSchedules();
+logger.info("Started server");

@@ -1,6 +1,7 @@
 import { createLogger, format, transports } from "winston";
 import path from "path";
 import chalk, { ChalkInstance } from "chalk";
+import { dbFunctions } from "../database/repository";
 
 const fileLineFormat = format((info) => {
   try {
@@ -47,6 +48,17 @@ export const logger = createLogger({
       const coloredContext = chalk.cyan(`${file}:${line}`);
       const coloredMessage = chalk.gray(message);
       const coloredTimestamp = chalk.yellow(`${timestamp}`);
+
+      try {
+        dbFunctions.addLogEntry(
+          level,
+          message as string,
+          file as string,
+          line as number,
+        );
+      } catch (error) {
+        logger.error(`Error inserting log into DB: ${error as string}`);
+      }
 
       return `${coloredLevel} [ ${coloredTimestamp} ] - ${coloredMessage} - [ ${coloredContext} ]`;
     }),

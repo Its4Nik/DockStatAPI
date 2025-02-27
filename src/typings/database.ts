@@ -8,6 +8,8 @@ interface backend_log_entries {
 
 interface config {
   polling_rate: number;
+  keep_data_for: number;
+  fetching_interval: number;
 }
 
 export type { backend_log_entries, config };

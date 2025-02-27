@@ -7,8 +7,6 @@
   },
   "dependencies": {
     "@elysiajs/swagger": "^1.2.2",
-    "@types/dockerode": "^3.3.34",
-    "@types/split2": "^4.2.3",
     "chalk": "^5.4.1",
     "dockerode": "^4.0.4",
     "elysia": "latest",
@@ -17,7 +15,9 @@
     "winston-transport": "^4.9.0"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "@types/dockerode": "^3.3.34",
+    "@types/split2": "^4.2.3"
   },
   "module": "src/index.js",
   "trustedDependencies": [

@@ -15,7 +15,7 @@ interface ContainerInfo {
   memoryUsage: number;
 }
 
-interface HostConfig {
+interface HostStats {
   hostId: string;
   dockerVersion: string;
   apiVersion: string;
@@ -23,6 +23,12 @@ interface HostConfig {
   architecture: string;
   totalMemory: number;
   totalCPU: number;
+  labels: string[];
+  containers: number;
+  containersRunning: number;
+  containersStopped: number;
+  containersPaused: number;
+  images: number;
 }
 
-export type { HostConfig, ContainerInfo, DockerHost };
+export type { HostStats, ContainerInfo, DockerHost };

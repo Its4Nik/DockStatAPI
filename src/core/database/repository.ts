@@ -1,6 +1,7 @@
 import Database from "bun:sqlite";
 import { logger } from "~/core/utils/logger";
 import type { DockerHost } from "~/typings/docker";
+import type { HostStats } from "~/typings/docker";
 
 const db = new Database("dockstatapi.db");
 
@@ -12,6 +13,22 @@ export const dbFunctions = {
         url TEXT,
         secure BOOLEAN
       );
+
+      CREATE TABLE IF NOT EXISTS host_stats (
+          hostId TEXT PRIMARY KEY,
+          dockerVersion TEXT,
+          apiVersion TEXT,
+          os TEXT,
+          architecture TEXT,
+          totalMemory INTEGER,
+          totalCPU INTEGER,
+          labels TEXT,
+          containers INTEGER,
+          containersRunning INTEGER,
+          containersStopped INTEGER,
+          containersPaused INTEGER,
+          images INTEGER
+        );
 
       CREATE TABLE IF NOT EXISTS container_stats (
         id TEXT,
@@ -50,6 +67,7 @@ export const dbFunctions = {
       .prepare(`SELECT COUNT(*) AS count FROM config`)
       .get() as { count: number };
     if (configRow.count === 0) {
+      logger.debug("Initializing default config");
       const stmt = db.prepare(
         `
         INSERT INTO config (polling_rate, keep_data_for, fetching_interval) VALUES (5, 7, 5)
@@ -62,6 +80,7 @@ export const dbFunctions = {
       .prepare(`SELECT COUNT(*) AS count FROM docker_hosts WHERE name = ?`)
       .get("Localhost") as { count: number };
     if (hostRow.count === 0) {
+      logger.debug("Initializing default docker host (Localhost)");
       const stmt = db.prepare(
         `
         INSERT INTO docker_hosts (name, url, secure) VALUES (?, ?, ?)
@@ -287,6 +306,56 @@ export const dbFunctions = {
       WHERE timestamp < datetime('now', '-' || ? || ' days')
     `);
     deleteLogsStmt.run(days);
+  },
+
+  updateHostStats(stats: HostStats) {
+    const labelsJson = JSON.stringify(stats.labels);
+    const stmt = db.prepare(`
+      INSERT INTO host_stats (
+        hostId,
+        dockerVersion,
+        apiVersion,
+        os,
+        architecture,
+        totalMemory,
+        totalCPU,
+        labels,
+        containers,
+        containersRunning,
+        containersStopped,
+        containersPaused,
+        images
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(hostId) DO UPDATE SET
+        dockerVersion = excluded.dockerVersion,
+        apiVersion = excluded.apiVersion,
+        os = excluded.os,
+        architecture = excluded.architecture,
+        totalMemory = excluded.totalMemory,
+        totalCPU = excluded.totalCPU,
+        labels = excluded.labels,
+        containers = excluded.containers,
+        containersRunning = excluded.containersRunning,
+        containersStopped = excluded.containersStopped,
+        containersPaused = excluded.containersPaused,
+        images = excluded.images;
+    `);
+    return stmt.run(
+      stats.hostId,
+      stats.dockerVersion,
+      stats.apiVersion,
+      stats.os,
+      stats.architecture,
+      stats.totalMemory,
+      stats.totalCPU,
+      labelsJson,
+      stats.containers,
+      stats.containersRunning,
+      stats.containersStopped,
+      stats.containersPaused,
+      stats.images,
+    );
   },
 };
 

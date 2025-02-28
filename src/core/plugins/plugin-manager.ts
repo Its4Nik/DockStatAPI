@@ -1,12 +1,7 @@
 import { EventEmitter } from "events";
 import { logger } from "../utils/logger";
-
-export interface Plugin {
-  name: string;
-  onContainerStart?: (containerInfo: any) => void;
-  onMetricsReceived?: (metrics: any) => void;
-  onLogReceived?: (log: string) => void;
-}
+import type { Plugin } from "~/typings/plugin";
+import type { ContainerInfo, HostStats } from "~/typings/docker";
 
 export class PluginManager extends EventEmitter {
   private plugins: Map<string, Plugin> = new Map();
@@ -27,16 +22,75 @@ export class PluginManager extends EventEmitter {
   }
 
   // Trigger plugin flows:
-
-  handleContainerStart(containerInfo: any) {
+  handleContainerStop(containerInfo: ContainerInfo) {
     this.plugins.forEach((plugin) => {
-      plugin.onContainerStart?.(containerInfo);
+      plugin.onContainerStop?.(containerInfo);
     });
   }
 
-  handleMetrics(metrics: any) {
+  handleContainerExit(containerInfo: ContainerInfo) {
     this.plugins.forEach((plugin) => {
-      plugin.onMetricsReceived?.(metrics);
+      plugin.onContainerExit?.(containerInfo);
+    });
+  }
+
+  handleContainerCreate(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerCreate?.(containerInfo);
+    });
+  }
+
+  handleContainerDestroy(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerDestroy?.(containerInfo);
+    });
+  }
+
+  handleContainerPause(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerPause?.(containerInfo);
+    });
+  }
+
+  handleContainerUnpause(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerUnpause?.(containerInfo);
+    });
+  }
+
+  handleContainerRestart(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerRestart?.(containerInfo);
+    });
+  }
+
+  handleContainerUpdate(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerUpdate?.(containerInfo);
+    });
+  }
+
+  handleContainerRename(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerRename?.(containerInfo);
+    });
+  }
+
+  handleContainerHealthStatus(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerHealthStatus?.(containerInfo);
+    });
+  }
+
+  handleHostUnreachable(HostStats: HostStats) {
+    this.plugins.forEach((plugin) => {
+      plugin.onHostUnreachable?.(HostStats);
+    });
+  }
+
+  handleHostReachableAgain(HostStats: HostStats) {
+    this.plugins.forEach((plugin) => {
+      plugin.onHostReachableAgain?.(HostStats);
     });
   }
 }

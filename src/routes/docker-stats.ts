@@ -8,7 +8,8 @@ import {
 } from "~/core/utils/calculations";
 import { logger } from "~/core/utils/logger";
 import { responseHandler } from "~/core/utils/respone-handler";
-import type { ContainerInfo, DockerHost, HostConfig } from "~/typings/docker";
+import type { ContainerInfo, DockerHost, HostStats } from "~/typings/docker";
+import type { DockerInfo } from "~/typings/dockerode";
 
 export const dockerStatsRoutes = new Elysia({ prefix: "/docker" })
   .get(
@@ -119,9 +120,9 @@ export const dockerStatsRoutes = new Elysia({ prefix: "/docker" })
         }
 
         const docker = getDockerClient(host);
-        const info = await docker.info();
+        const info: DockerInfo = await docker.info();
 
-        const config: HostConfig = {
+        const config: HostStats = {
           hostId: host.name,
           dockerVersion: info.ServerVersion,
           apiVersion: info.Driver,
@@ -129,6 +130,12 @@ export const dockerStatsRoutes = new Elysia({ prefix: "/docker" })
           architecture: info.Architecture,
           totalMemory: info.MemTotal,
           totalCPU: info.NCPU,
+          labels: info.Labels,
+          images: info.Images,
+          containers: info.Containers,
+          containersPaused: info.ContainersPaused,
+          containersRunning: info.ContainersRunning,
+          containersStopped: info.ContainersStopped,
         };
 
         set.headers["Content-Type"] = "application/json";

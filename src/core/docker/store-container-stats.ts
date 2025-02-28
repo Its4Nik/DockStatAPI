@@ -8,39 +8,57 @@ import {
 
 async function storeContainerData() {
   try {
-    // Stage 1: getting all docker hosts and mapping over them
     const hosts = dbFunctions.getDockerHosts();
 
-    hosts.map(async (host) => {
-      try {
-        // Stage 2: getting the Docker client and pinging to test the connection
+    // Process each host concurrently and wait for them all to finish
+    await Promise.all(
+      hosts.map(async (host) => {
         const docker = getDockerClient(host);
 
+        // Test the connection with a ping
         try {
           await docker.ping();
         } catch (error) {
+          const errMsg = error instanceof Error ? error.message : String(error);
           throw new Error(
-            `Error while pinging docker host: ${error as string}`,
+            `Failed to ping docker host "${host.name}": ${errMsg}`,
           );
         }
 
-        const containers = await docker.listContainers({ all: true });
+        let containers;
+        try {
+          containers = await docker.listContainers({ all: true });
+        } catch (error) {
+          const errMsg = error instanceof Error ? error.message : String(error);
+          throw new Error(
+            `Failed to list containers on host "${host.name}": ${errMsg}`,
+          );
+        }
 
+        // Process each container concurrently
         await Promise.all(
           containers.map(async (containerInfo) => {
+            const containerName = containerInfo.Names[0].replace(/^\//, "");
             try {
               const container = docker.getContainer(containerInfo.Id);
-              const stats = await new Promise<Docker.ContainerStats>(
+
+              const stats: Docker.ContainerStats = await new Promise(
                 (resolve, reject) => {
                   container.stats({ stream: false }, (error, stats) => {
                     if (error) {
+                      const errMsg =
+                        error instanceof Error ? error.message : String(error);
                       return reject(
-                        new Error(`An Error occured: ${error as string}`),
+                        new Error(
+                          `Failed to get stats for container "${containerName}" (ID: ${containerInfo.Id}) on host "${host.name}": ${errMsg}`,
+                        ),
                       );
                     }
                     if (!stats) {
                       return reject(
-                        new Error(`No Stats available: ${error as string}`),
+                        new Error(
+                          `No stats returned for container "${containerName}" (ID: ${containerInfo.Id}) on host "${host.name}".`,
+                        ),
                       );
                     }
                     resolve(stats);
@@ -51,7 +69,7 @@ async function storeContainerData() {
               dbFunctions.addContainerStats(
                 containerInfo.Id,
                 host.name,
-                containerInfo.Names[0].replace(/^\//, ""),
+                containerName,
                 containerInfo.Image,
                 containerInfo.Status,
                 containerInfo.State,
@@ -59,18 +77,19 @@ async function storeContainerData() {
                 calculateMemoryUsage(stats),
               );
             } catch (error) {
-              throw new Error(`An error occurred: ${error as string}`);
+              const errMsg =
+                error instanceof Error ? error.message : String(error);
+              throw new Error(
+                `Error processing container "${containerName}" (ID: ${containerInfo.Id}) on host "${host.name}": ${errMsg}`,
+              );
             }
           }),
         );
-      } catch (error: unknown) {
-        throw new Error(
-          `Error while getting docker client: ${error as string}`,
-        );
-      }
-    });
-  } catch (error: unknown) {
-    throw new Error("Error while XXX");
+      }),
+    );
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to store container data: ${errMsg}`);
   }
 }
 

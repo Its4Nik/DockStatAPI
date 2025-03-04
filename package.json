@@ -3,9 +3,10 @@
   "version": "2.1.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "docker compose -f ./docker/docker-compose.dev.yaml up -d && bun run --watch src/index.ts"
+    "dev": "docker compose -f docker/docker-compose.dev.yaml up -d && cross-env NODE_ENV=dev bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@elysiajs/static": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
     "chalk": "^5.4.1",
     "dockerode": "^4.0.4",
@@ -15,9 +16,11 @@
     "winston-transport": "^4.9.0"
   },
   "devDependencies": {
-    "bun-types": "latest",
     "@types/dockerode": "^3.3.34",
-    "@types/split2": "^4.2.3"
+    "@types/split2": "^4.2.3",
+    "bun-types": "latest",
+    "cross-env": "^7.0.3",
+    "wrap-ansi": "^9.0.0"
   },
   "module": "src/index.js",
   "trustedDependencies": [

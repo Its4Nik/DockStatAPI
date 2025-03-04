@@ -9,12 +9,15 @@ import { backendLogs } from "~/routes/logs";
 import { dockerWebsocketRoutes } from "~/routes/docker-websocket";
 import { apiConfigRoutes } from "~/routes/api-config";
 import { setSchedules } from "~/core/docker/scheduler";
+import staticPlugin from "@elysiajs/static";
 
+console.log("")
 logger.info("Starting server...");
 
 dbFunctions.init();
 
 const DockStatAPI = new Elysia()
+  .use(staticPlugin())
   .use(
     swagger({
       documentation: {
@@ -46,12 +49,20 @@ const DockStatAPI = new Elysia()
   .use(backendLogs)
   .use(dockerWebsocketRoutes)
   .use(apiConfigRoutes)
-  .get("/health", () => ({ status: "healthy" }), { tags: ["Utils"] });
+  .get("/health", () => ({ status: "healthy" }), { tags: ["Utils"] })
+  .onError(({ code, set }) => {
+    if (code === 'NOT_FOUND') {
+      logger.warn("Unknown route, showing error page!")
+      set.status = 404
+      set.headers['Content-Type'] = 'text/html'
+      return Bun.file('public/404.html')
+    }
+  });
 
 async function startServer() {
   try {
-    await loadPlugins("./src/plugins");
 
+    await loadPlugins("./src/plugins");
     DockStatAPI.listen(3000, ({ hostname, port }) => {
       logger.info(`DockStatAPI is running at http://${hostname}:${port}`);
       logger.info(
@@ -66,4 +77,6 @@ async function startServer() {
 
 await startServer();
 await setSchedules();
+
 logger.info("Started server");
+console.log("")

@@ -7,6 +7,8 @@ const db = new Database("dockstatapi.db");
 
 export const dbFunctions = {
   init() {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Initializing Database ⏳")
     db.exec(`
       CREATE TABLE IF NOT EXISTS docker_hosts (
         name TEXT,
@@ -88,9 +90,13 @@ export const dbFunctions = {
       );
       stmt.run("Localhost", "localhost:2375", false);
     }
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Initializing Database ✔️  (${duration}ms)`);
   },
 
   addDockerHost(hostId: string, url: string, secure: boolean) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Adding Docker Host ⏳")
     if (
       typeof hostId !== "string" ||
       typeof url !== "string" ||
@@ -104,16 +110,23 @@ export const dbFunctions = {
           INSERT INTO docker_hosts (name, url, secure)
           VALUES (?, ?, ?)
         `);
-    return stmt.run(hostId, url, secure);
+    const data = stmt.run(hostId, url, secure);
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Adding Docker Host ✔️  (${duration}ms)`);
+    return data
   },
 
   getDockerHosts(): DockerHost[] {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Getting Docker Host ⏳")
     const stmt = db.prepare(`
       SELECT name, url, secure
       FROM docker_hosts
       ORDER BY name DESC
     `);
     const data = stmt.all();
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Getting Docker Host ✔️  (${duration}ms)`);
     return data as DockerHost[];
   },
 
@@ -141,15 +154,22 @@ export const dbFunctions = {
   },
 
   getAllLogs() {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Getting all Logs ⏳")
     const stmt = db.prepare(`
           SELECT timestamp, level, message, file, line
           FROM backend_log_entries
           ORDER BY timestamp DESC
         `);
-    return stmt.all();
+    const data = stmt.all();
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Getting all Logs ✔️  (${duration}ms)`);
+    return data
   },
 
   getLogsByLevel(level: string) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Getting level-logs ⏳")
     if (typeof level !== "string") {
       logger.crit("Level parameter must be a string");
       throw new TypeError("Level parameter must be a string");
@@ -161,10 +181,15 @@ export const dbFunctions = {
           WHERE level = ?
           ORDER BY timestamp DESC
         `);
-    return stmt.all(level);
+    const data = stmt.all(level);
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Getting level-logs ✔️  (${duration}ms)`);
+    return data
   },
 
   updateDockerHost(name: string, url: string, secure: boolean) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Updating Docker Host ⏳")
     if (
       typeof name !== "string" ||
       typeof url !== "string" ||
@@ -179,10 +204,15 @@ export const dbFunctions = {
         SET url = ?, secure = ?
         WHERE name = ?
       `);
-    return stmt.run(url, secure, name);
+    const data = stmt.run(url, secure, name);
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Updating Docker Host ✔️  (${duration}ms)`);
+    return data
   },
 
   deleteDockerHost(name: string) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Deleting Docker Host ⏳")
     if (typeof name !== "string") {
       logger.crit("Invalid parameter type for deleteDockerHost");
       throw new TypeError("Name parameter must be a string");
@@ -192,17 +222,27 @@ export const dbFunctions = {
         DELETE FROM docker_hosts
         WHERE name = ?
       `);
-    return stmt.run(name);
+    const data = stmt.run(name);
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Deleting Docker Host ✔️  (${duration}ms)`);
+    return data
   },
 
   clearAllLogs() {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Clearing all Logs ⏳")
     const stmt = db.prepare(`
         DELETE FROM backend_log_entries
       `);
-    return stmt.run();
+    const data = stmt.run();
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Clearing all Logs ✔️  (${duration}ms)`);
+    return data
   },
 
   clearLogsByLevel(level: string) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Clearing all logs by level ⏳")
     if (typeof level !== "string") {
       logger.crit("Invalid parameter type for clearLogsByLevel");
       throw new TypeError("Level parameter must be a string");
@@ -212,7 +252,10 @@ export const dbFunctions = {
         DELETE FROM backend_log_entries
         WHERE level = ?
       `);
-    return stmt.run(level);
+    const data = stmt.run(level);
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Clearing all logs by level ✔️  (${duration}ms)`);
+    return data
   },
 
   updateConfig(
@@ -220,6 +263,8 @@ export const dbFunctions = {
     fetching_interval: number,
     keep_data_for: number,
   ) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Updating config ⏳")
     if (
       typeof polling_rate !== "number" ||
       typeof fetching_interval !== "number" ||
@@ -236,16 +281,24 @@ export const dbFunctions = {
           keep_data_for = ?
     `);
 
-    return stmt.run(polling_rate, fetching_interval, keep_data_for);
+    const data = stmt.run(polling_rate, fetching_interval, keep_data_for);
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Updating config ✔️  (${duration}ms)`);
+    return data
   },
 
   getConfig() {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Getting config ⏳")
     const stmt = db.prepare(`
         SELECT polling_rate, keep_data_for, fetching_interval
         FROM config
       `);
 
-    return stmt.all();
+    const data = stmt.all();
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Getting config ✔️  (${duration}ms)`);
+    return data
   },
 
   // Stats:
@@ -259,6 +312,8 @@ export const dbFunctions = {
     cpu_usage: number,
     memory_usage: number,
   ) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Adding container statistics ⏳")
     if (
       typeof id !== "string" ||
       typeof hostId !== "string" ||
@@ -277,7 +332,7 @@ export const dbFunctions = {
       INSERT INTO container_stats (id, hostId, name, image, status, state, cpu_usage, memory_usage)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    return stmt.run(
+    const data = stmt.run(
       id,
       hostId,
       name,
@@ -287,9 +342,14 @@ export const dbFunctions = {
       cpu_usage,
       memory_usage,
     );
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Adding container statistics ✔️  (${duration}ms)`);
+    return data
   },
 
   deleteOldData(days: number) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Deleting old data ⏳")
     if (typeof days !== "number") {
       logger.crit("Invalid parameter type for deleteOldData");
       throw new TypeError("Days parameter must be a number");
@@ -306,9 +366,13 @@ export const dbFunctions = {
       WHERE timestamp < datetime('now', '-' || ? || ' days')
     `);
     deleteLogsStmt.run(days);
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Deleting old data ✔️  (${duration}ms)`);
   },
 
   updateHostStats(stats: HostStats) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Update Host Stats ⏳")
     const labelsJson = JSON.stringify(stats.labels);
     const stmt = db.prepare(`
       INSERT INTO host_stats (
@@ -341,7 +405,7 @@ export const dbFunctions = {
         containersPaused = excluded.containersPaused,
         images = excluded.images;
     `);
-    return stmt.run(
+    const data = stmt.run(
       stats.hostId,
       stats.dockerVersion,
       stats.apiVersion,
@@ -356,7 +420,8 @@ export const dbFunctions = {
       stats.containersPaused,
       stats.images,
     );
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Update Host stats ✔️  (${duration}ms)`);
+    return data
   },
 };
-
-dbFunctions.init();

@@ -27,6 +27,9 @@ The DockStat API provides the following endpoints:
 - `DELETE /logs`: Clear all backend logs.
 - `DELETE /logs/:level`: Clear logs by log level.
 
+### Webocket
+- `WS(S) /docker/stats`: Retrieve the current API configuration.
+
 ## API
 
 The DockStat API exposes the following endpoints:

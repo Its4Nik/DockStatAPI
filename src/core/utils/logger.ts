@@ -49,7 +49,7 @@ const formatTerminalMessage = (message: string, prefixLength: number) => {
 };
 
 export const logger = createLogger({
-  level: "debug",
+  level: process.env.LOG_LEVEL || 'debug',
   format: format.combine(
     format.timestamp({ format: "DD/MM HH:mm:ss" }),
     fileLineFormat(),

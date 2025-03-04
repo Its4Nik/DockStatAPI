@@ -61,9 +61,9 @@ const DockStatAPI = new Elysia()
 
 async function startServer() {
   try {
-
     await loadPlugins("./src/plugins");
     DockStatAPI.listen(3000, ({ hostname, port }) => {
+      console.log("")
       logger.info(`DockStatAPI is running at http://${hostname}:${port}`);
       logger.info(
         `Swagger API Documentation available at http://${hostname}:${port}/swagger`,
@@ -75,8 +75,8 @@ async function startServer() {
   }
 }
 
-await startServer();
 await setSchedules();
+await startServer();
 
 logger.info("Started server");
 console.log("")

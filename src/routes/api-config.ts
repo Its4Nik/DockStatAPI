@@ -3,6 +3,18 @@ import { dbFunctions } from "~/core/database/repository";
 import { logger } from "~/core/utils/logger";
 import { responseHandler } from "~/core/utils/respone-handler";
 import { config } from "~/typings/database";
+import {
+  version,
+  authorEmail,
+  authorName,
+  authorWebsite,
+  contributers,
+  dependencies,
+  description,
+  devDependencies,
+  license,
+} from "~/core/utils/package-json";
+import { describe } from "test";
 
 export const apiConfigRoutes = new Elysia({ prefix: "/config" })
   .get(
@@ -55,4 +67,27 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
       }),
       tags: ["Management"],
     },
-  );
+  )
+  .get("/package", async ({ set }) => {
+    try {
+      logger.debug("Fetching package.json");
+      const data = {
+        version: version,
+        description: description,
+        license: license,
+        authorName: authorName,
+        authorEmail: authorEmail,
+        authorWebsite: authorWebsite,
+        contributers: contributers,
+        dependencies: dependencies,
+        devDependencies: devDependencies,
+      };
+      return data;
+    } catch (error) {
+      return responseHandler.error(
+        set,
+        error as string,
+        "Error while reading package.json",
+      );
+    }
+  });

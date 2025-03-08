@@ -58,7 +58,8 @@ The DockStat API exposes the following endpoints:
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the CC BY-NC 4.0 License.
+[cc-by-nc-image]: https://licensebuttons.net/l/by-nc/4.0/88x31.png
 
 ## Testing
 

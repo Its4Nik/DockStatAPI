@@ -1,5 +1,13 @@
 {
   "name": "dockstatapi",
+  "author": {
+    "email": "info@itsnik.de",
+    "name": "ItsNik",
+    "url": "https://github.com/Its4Nik"
+  },
+  "license": "CC BY-NC 4.0",
+  "contributors": [],
+  "description": "DockStatAPI is an API backend featuring plugins and more for DockStat",
   "version": "2.1.0",
   "scripts": {
     "start": "cross-env NODE_ENV=production LOG_LEVEL=info bun run src/index.ts",

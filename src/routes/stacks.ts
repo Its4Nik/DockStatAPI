@@ -20,9 +20,8 @@ export const stackRoutes = new Elysia({ prefix: "/stacks" })
                     ? body.isCustom
                     : false;
 
-                const image_updates = body.image_updates
-                    ? body.image_updates
-                    : false;
+                const image_updates = body.image_updates || false;
+
 
                 let errMsg: string = "";
                 if (!body.compose_spec) {

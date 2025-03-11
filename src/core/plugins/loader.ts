@@ -16,7 +16,9 @@ export async function loadPlugins(pluginDir: string) {
   const files = fs.readdirSync(pluginPath);
 
   for (const file of files) {
-    if (!file.endsWith(".plugin.ts")) continue;
+    if (!file.endsWith(".plugin.ts")) {
+      continue
+    };
 
     const absolutePath = path.join(pluginPath, file);
     try {

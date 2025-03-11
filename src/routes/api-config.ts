@@ -8,7 +8,7 @@ import {
   authorEmail,
   authorName,
   authorWebsite,
-  contributers,
+  contributors,
   dependencies,
   description,
   devDependencies,
@@ -71,16 +71,16 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
     try {
       logger.debug("Fetching package.json");
       return {
-              version: version,
-              description: description,
-              license: license,
-              authorName: authorName,
-              authorEmail: authorEmail,
-              authorWebsite: authorWebsite,
-              contributers: contributers,
-              dependencies: dependencies,
-              devDependencies: devDependencies,
-            };
+        version: version,
+        description: description,
+        license: license,
+        authorName: authorName,
+        authorEmail: authorEmail,
+        authorWebsite: authorWebsite,
+        contributors: contributors,
+        dependencies: dependencies,
+        devDependencies: devDependencies,
+      };
 
     } catch (error) {
       return responseHandler.error(

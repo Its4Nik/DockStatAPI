@@ -22,27 +22,23 @@ export const stackRoutes = new Elysia({ prefix: "/stacks" })
                 const image_updates = body.image_updates || false;
 
 
-                let errMsg: string = "";
+                let missingParams: string[] = [];
                 if (!body.compose_spec) {
-                    errMsg = "compose_spec"
+                    missingParams.push("compose_spec");
                 }
-
                 if (!body.automatic_reboot_on_error) {
-                    errMsg = `${errMsg} automatic_reboot_on_error`
+                    missingParams.push("automatic_reboot_on_error");
                 }
-
                 if (!body.source) {
-                    errMsg = `${errMsg} source`
+                    missingParams.push("source");
                 }
-
                 if (!body.name) {
-                    errMsg = `${errMsg} name`
+                    missingParams.push("name");
                 }
 
-                if (errMsg) {
-                    errMsg = errMsg.trim();
-                    errMsg = `Missing values of: ${errMsg.replaceAll(" ", "; ")}`
-                    return responseHandler.error(set, errMsg, errMsg)
+                if (missingParams.length > 0) {
+                    const errMsg = `Missing values of: ${missingParams.join("; ")}`;
+                    return responseHandler.error(set, errMsg, errMsg);
                 }
 
                 await deployStack(

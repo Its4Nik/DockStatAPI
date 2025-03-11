@@ -1,3 +1,7 @@
+# Deprecation Warning!
+# V2 is abondend, since there whhere to many issues in the codebase!
+# Please see v3 (next commit from this one onwards, all other branches which are not based on bun will be deleted!)
+
 # DockStatAPI v2
 
 ![Dockstat Logo](.github/DockStat.png)

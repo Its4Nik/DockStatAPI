@@ -122,12 +122,11 @@ export async function getStackStatus(stack_name: string): Promise<any> {
         const stackPath = await getStackPath(stackYaml as Stack);
         const rawStatus = await DockerCompose.ps({ cwd: stackPath });
 
-        const transformedStatus = rawStatus.data.services.reduce((acc: any, service: any) => {
-            acc[(service.name)] = service.state;
-            return acc;
-        }, {});
+        return rawStatus.data.services.reduce((acc: any, service: any) => {
+                    acc[(service.name)] = service.state;
+                    return acc;
+                }, {});
 
-        return transformedStatus;
     } catch (error: any) {
         throw new Error(`Error while retrieving status for stack "${stack_name}": ${error.message || error}`);
     }

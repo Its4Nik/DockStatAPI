@@ -1,4 +1,4 @@
 *.db*
-stacks
-node_modules
+/stacks
+/node_modules
 *.md

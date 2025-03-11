@@ -13,17 +13,23 @@
     "start": "cross-env NODE_ENV=production LOG_LEVEL=info bun run src/index.ts",
     "start:linux": "NODE_ENV=production LOG_LEVEL=info bun run src/index.ts",
     "dev": "docker compose -f docker/docker-compose.dev.yaml up -d && cross-env NODE_ENV=dev bun run --watch src/index.ts",
-    "build": "bun build --target bun src/index.ts --outdir ./dist"
+    "dev:clean": "bun dev ; echo '\nExiting...' ; bun clean",
+    "build": "bun build --target bun src/index.ts --outdir ./dist",
+    "clean": "bun run clean:win || bun run clean:lin",
+    "clean:win": "node -e \"process.exit(process.platform === 'win32' ? 0 : 1)\" && cmd /c del /Q dockstatapi.db* && echo 'success'",
+    "clean:lin": "node -e \"process.exit(process.platform !== 'win32' ? 0 : 1)\" && rm -f dockstatapi.db* && echo 'success'"
   },
   "dependencies": {
     "@elysiajs/static": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
     "chalk": "^5.4.1",
+    "docker-compose": "^1.1.1",
     "dockerode": "^4.0.4",
     "elysia": "latest",
     "split2": "^4.2.0",
     "winston": "^3.17.0",
-    "winston-transport": "^4.9.0"
+    "winston-transport": "^4.9.0",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@types/dockerode": "^3.3.34",

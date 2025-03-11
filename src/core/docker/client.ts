@@ -18,3 +18,20 @@ export const getDockerClient = (host: DockerHost): Docker => {
     throw new Error("Invalid Docker host configuration");
   }
 };
+
+export const stackClient = (): Docker => {
+  try {
+    const docker = new Docker({
+      socketPath: "/var/run/docker.sock"
+    })
+
+    docker.ping().catch(() => {
+      throw new Error("Could not ping local Docker-Socket")
+    });
+
+    return docker;
+  } catch (error) {
+    logger.error(`Could not create Docker client for "/var/run/docker.sock" - ${error as string}`)
+    throw new Error()
+  }
+}

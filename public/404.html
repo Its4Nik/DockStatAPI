@@ -26,7 +26,6 @@
         .logo {
             height: 15vh;
             margin-bottom: 1rem;
-            animation: bounce 4s infinite;
         }
 
         .error-code {
@@ -66,27 +65,17 @@
             transform: translateY(-2px);
         }
 
-        @keyframes bounce {
-
-            0%,
-            100% {
-                transform: scale(1, 1);
-            }
-
-            50% {
-                transform: scale(1.1, 1.1);
-            }
-        }
-
         @keyframes error {
 
             0%,
             100% {
                 color: rgb(255, 255, 255);
+                transform: scale(1, 1);
             }
 
             50% {
                 color: rgb(255, 168, 168);
+                transform: scale(1.1, 1.1);
             }
         }
     </style>

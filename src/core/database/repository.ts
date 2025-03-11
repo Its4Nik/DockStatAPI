@@ -1,15 +1,35 @@
 import Database from "bun:sqlite";
 import { logger } from "~/core/utils/logger";
-import type { DockerHost } from "~/typings/docker";
-import type { HostStats } from "~/typings/docker";
+import { relayController } from "~/core/docker/relay-controller";
+import type { DockerHost, HostStats } from "~/typings/docker";
+import type { stacks_config } from "~/typings/database";
 
 const db = new Database("dockstatapi.db");
+db.exec("PRAGMA journal_mode = WAL;");
 
 export const dbFunctions = {
   init() {
     const startTime = Date.now();
-    logger.debug("__task__ __db__ Initializing Database ⏳")
     db.exec(`
+      CREATE TABLE IF NOT EXISTS backend_log_entries (
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        level TEXT,
+        message TEXT,
+        file TEXT,
+        line NUMBER
+      );
+
+      CREATE TABLE IF NOT EXISTS stacks_config (
+        name TEXT PRIMARY KEY,
+        version INTEGER,
+        custom BOOLEAN,
+        source TEXT,
+        container_count INTEGER,
+        stack_prefix TEXT,
+        automatic_reboot_on_error BOOLEAN,
+        image_updates BOOLEAN
+      );
+
       CREATE TABLE IF NOT EXISTS docker_hosts (
         name TEXT,
         url TEXT,
@@ -49,15 +69,10 @@ export const dbFunctions = {
         keep_data_for NUMBER,
         fetching_interval NUMBER
       );
-
-      CREATE TABLE IF NOT EXISTS backend_log_entries (
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-        level TEXT,
-        message TEXT,
-        file TEXT,
-        line NUMBER
-      );
     `);
+
+    logger.info("Starting server...");
+
 
     /*
      * Default values:
@@ -90,6 +105,7 @@ export const dbFunctions = {
       );
       stmt.run("Localhost", "localhost:2375", false);
     }
+    logger.debug("__task__ __db__ Initializing Database ⏳")
     const duration = Date.now() - startTime;
     logger.debug(`__task__ __db__ Initializing Database ✔️  (${duration}ms)`);
   },
@@ -301,6 +317,29 @@ export const dbFunctions = {
     return data
   },
 
+  deleteOldData(days: number) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Deleting old data ⏳")
+    if (typeof days !== "number") {
+      logger.crit("Invalid parameter type for deleteOldData");
+      throw new TypeError("Days parameter must be a number");
+    }
+
+    const deleteContainerStmt = db.prepare(`
+        DELETE FROM container_stats
+        WHERE timestamp < datetime('now', '-' || ? || ' days')
+      `);
+    deleteContainerStmt.run(days);
+
+    const deleteLogsStmt = db.prepare(`
+        DELETE FROM backend_log_entries
+        WHERE timestamp < datetime('now', '-' || ? || ' days')
+      `);
+    deleteLogsStmt.run(days);
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Deleting old data ✔️  (${duration}ms)`);
+  },
+
   // Stats:
   addContainerStats(
     id: string,
@@ -345,29 +384,6 @@ export const dbFunctions = {
     const duration = Date.now() - startTime;
     logger.debug(`__task__ __db__ Adding container statistics ✔️  (${duration}ms)`);
     return data
-  },
-
-  deleteOldData(days: number) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Deleting old data ⏳")
-    if (typeof days !== "number") {
-      logger.crit("Invalid parameter type for deleteOldData");
-      throw new TypeError("Days parameter must be a number");
-    }
-
-    const deleteContainerStmt = db.prepare(`
-      DELETE FROM container_stats
-      WHERE timestamp < datetime('now', '-' || ? || ' days')
-    `);
-    deleteContainerStmt.run(days);
-
-    const deleteLogsStmt = db.prepare(`
-      DELETE FROM backend_log_entries
-      WHERE timestamp < datetime('now', '-' || ? || ' days')
-    `);
-    deleteLogsStmt.run(days);
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Deleting old data ✔️  (${duration}ms)`);
   },
 
   updateHostStats(stats: HostStats) {
@@ -424,4 +440,105 @@ export const dbFunctions = {
     logger.debug(`__task__ __db__ Update Host stats ✔️  (${duration}ms)`);
     return data
   },
+
+  // Stacks:
+  // This is the stack config which will be saved in the database, the "real" docker-compose can be found in the designated folder
+  addStack(stack_config: stacks_config) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Add Stack config ⏳")
+
+    const stmt = db.prepare(`
+      INSERT INTO stacks_config (
+        name,
+        version,
+        custom,
+        source,
+        container_count,
+        stack_prefix,
+        automatic_reboot_on_error,
+        image_updates
+      )
+      VALUES(?, ?, ?, ?, ?, ?, ?, ?);
+    `);
+    const data = stmt.run(
+      (stack_config.name as any), // I dont fucking know bruh
+      stack_config.version,
+      stack_config.custom,
+      stack_config.source,
+      stack_config.container_count,
+      stack_config.stack_prefix,
+      stack_config.automatic_reboot_on_error,
+      stack_config.image_updates
+    );
+
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Add Stack config ✔️  (${duration}ms)`);
+    relayController.stackAdded();
+    return data;
+  },
+
+  getStacks() {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Get Stack config ⏳")
+
+    const stmt = db.prepare(`
+          SELECT name, version, custom, source, container_count, stack_prefix, automatic_reboot_on_error, image_updates
+          FROM stacks_config
+          ORDER BY name DESC
+        `);
+    const data = stmt.all();
+
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Get Stack config ✔️  (${duration}ms)`);
+    return data;
+  },
+
+  deleteStack(name: string) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Delete Stack config ⏳");
+
+    const stmt = db.prepare(`
+    DELETE FROM stacks_config
+    WHERE name = ?;
+  `);
+    const data = stmt.run(name);
+
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Delete Stack config ✔️  (${duration}ms)`);
+    relayController.stackDeleted();
+    return data;
+  },
+
+  updateStack(stack_config: stacks_config) {
+    const startTime = Date.now();
+    logger.debug("__task__ __db__ Update Stack config ⏳");
+
+    const stmt = db.prepare(`
+    UPDATE stacks_config
+    SET
+      version = ?,
+      custom = ?,
+      source = ?,
+      container_count = ?,
+      stack_prefix = ?,
+      automatic_reboot_on_error = ?,
+      image_updates = ?
+    WHERE name = ?;
+  `);
+    const data = stmt.run(
+      stack_config.version,
+      stack_config.custom,
+      stack_config.source,
+      stack_config.container_count,
+      stack_config.stack_prefix,
+      stack_config.automatic_reboot_on_error,
+      stack_config.image_updates,
+      (stack_config.name as any)  // Bruh what is this :sob:
+    );
+
+    const duration = Date.now() - startTime;
+    logger.debug(`__task__ __db__ Update Stack config ✔️  (${duration}ms)`);
+    relayController.stackUpdated();
+    return data;
+  }
 };

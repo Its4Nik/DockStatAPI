@@ -14,7 +14,6 @@ import {
   devDependencies,
   license,
 } from "~/core/utils/package-json";
-import { describe } from "test";
 
 export const apiConfigRoutes = new Elysia({ prefix: "/config" })
   .get(
@@ -90,4 +89,8 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
         "Error while reading package.json",
       );
     }
-  });
+  },
+    {
+      tags: ["Management"],
+    },
+  );

@@ -70,18 +70,18 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
   .get("/package", async ({ set }) => {
     try {
       logger.debug("Fetching package.json");
-      const data = {
-        version: version,
-        description: description,
-        license: license,
-        authorName: authorName,
-        authorEmail: authorEmail,
-        authorWebsite: authorWebsite,
-        contributers: contributers,
-        dependencies: dependencies,
-        devDependencies: devDependencies,
-      };
-      return data;
+      return {
+              version: version,
+              description: description,
+              license: license,
+              authorName: authorName,
+              authorEmail: authorEmail,
+              authorWebsite: authorWebsite,
+              contributers: contributers,
+              dependencies: dependencies,
+              devDependencies: devDependencies,
+            };
+
     } catch (error) {
       return responseHandler.error(
         set,

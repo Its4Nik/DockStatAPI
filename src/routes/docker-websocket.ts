@@ -62,7 +62,9 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
       }, 30000);
 
       for (const host of hosts) {
-        if (!(socket as any).isOpen) break;
+        if (!(socket as any).isOpen) {
+          break
+        };
 
         logger.debug(`Processing host: ${host.name}`);
 
@@ -77,7 +79,9 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
           );
 
           for (const containerInfo of containers) {
-            if (!(socket as any).isOpen) break;
+            if (!(socket as any).isOpen) {
+              break
+            };
 
             logger.debug(
               `Processing container ${containerInfo.Id} on host ${host.name}`,
@@ -109,8 +113,13 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
               statsStream
                 .pipe(splitStream)
                 .on("data", (line: string) => {
-                  if (socket.readyState !== 1) return; // 1 = OPEN state
-                  if (!line) return;
+                  // 1 = OPEN state
+                  if (socket.readyState !== 1) {
+                    return
+                  };
+                  if (!line) {
+                    return
+                  };
                   try {
                     const stats = JSON.parse(line);
                     const cpuUsage = calculateCpuPercent(stats);
@@ -187,7 +196,9 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
     },
 
     message(socket, message) {
-      if (message === "pong") return;
+      if (message === "pong") {
+        return
+      };
     },
 
     close(socket, code, reason) {

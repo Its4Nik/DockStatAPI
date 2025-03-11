@@ -1,14 +1,9 @@
 import packageJson from "~/../package.json";
+const { version, description, license, contributors, dependencies, devDependencies } = packageJson;
 
-const version = packageJson.version;
-const description = packageJson.description;
 const authorName = packageJson.author.name;
 const authorEmail = packageJson.author.email;
 const authorWebsite = packageJson.author.url;
-const license = packageJson.license;
-const contributers = packageJson.contributors;
-const dependencies = packageJson.dependencies;
-const devDependencies = packageJson.devDependencies;
 
 export {
   version,
@@ -17,7 +12,7 @@ export {
   authorEmail,
   authorWebsite,
   license,
-  contributers,
+  contributors,
   dependencies,
   devDependencies,
 };

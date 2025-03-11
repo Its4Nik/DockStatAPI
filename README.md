@@ -1,3 +1,6 @@
+# DEPRRECATION WARNING
+v1 is EOL, I do not recommend using it. Please take a look at the `rewrite-elysiajs` or `dev` branch!
+
 # DockstatAPI
 
 ## This tool relies on the [DockerSocket Proxy](https://docs.linuxserver.io/images/docker-socket-proxy/), please see it's documentation for more information.

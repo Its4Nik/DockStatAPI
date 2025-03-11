@@ -16,9 +16,8 @@ export const stackRoutes = new Elysia({ prefix: "/stacks" })
         "/deploy",
         async ({ set, body }) => {
             try {
-                const isCustom = body.isCustom
-                    ? body.isCustom
-                    : false;
+                const isCustom = body.isCustom || false;
+
 
                 const image_updates = body.image_updates || false;
 

@@ -12,8 +12,13 @@ import { responseHandler } from "~/core/utils/respone-handler";
 import type { DockerHost } from "~/typings/docker";
 import split2 from "split2";
 import type { Readable } from "stream";
-import type internal from "stream";
 import type { streams } from "~/typings/websocket";
+
+interface ExtendedWebSocket extends WebSocket {
+  isOpen: boolean;
+  streams: any[];
+  heartbeat: NodeJS.Timeout | null;
+}
 
 const set: { headers: HTTPHeaders; status?: number | keyof StatusMap } = {
   headers: {},
@@ -26,10 +31,9 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
       socket.send(JSON.stringify({ message: "Connection established" }));
       let hosts: DockerHost[];
 
-      // Track if the WebSocket is open
-      (socket as any).isOpen = true;
-      (socket as any).streams = [];
-      (socket as any).heartbeat = null; // Add heartbeat reference
+      (socket as unknown as ExtendedWebSocket).isOpen = true;
+      (socket as unknown as ExtendedWebSocket).streams = [];
+      (socket as unknown as ExtendedWebSocket).heartbeat = null; // Add heartbeat reference
 
       logger.info(`Opened WebSocket (${socket.id})`);
 
@@ -54,7 +58,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
 
       // Add heartbeat using WebSocket protocol-level ping
       (socket as any).heartbeat = setInterval(() => {
-        if (!(socket as any).isOpen) {
+        if (!(socket as unknown as ExtendedWebSocket).isOpen) {
           clearInterval((socket as any).heartbeat);
           return;
         }
@@ -62,7 +66,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
       }, 30000);
 
       for (const host of hosts) {
-        if (!(socket as any).isOpen) {
+        if (!(socket as unknown as ExtendedWebSocket).isOpen) {
           break
         };
 
@@ -79,7 +83,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
           );
 
           for (const containerInfo of containers) {
-            if (!(socket as any).isOpen) {
+            if (!(socket as unknown as ExtendedWebSocket).isOpen) {
               break
             };
 
@@ -97,7 +101,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
               const splitStream = split2();
 
               // Store both streams for cleanup
-              (socket as any).streams.push({ statsStream, splitStream });
+              (socket as unknown as ExtendedWebSocket).streams.push({ statsStream, splitStream });
 
               // Handle stream lifecycle
               statsStream
@@ -195,7 +199,7 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
       }
     },
 
-    message(socket, message) {
+    message(_, message) {
       if (message === "pong") {
         return
       };
@@ -203,14 +207,14 @@ export const dockerWebsocketRoutes = new Elysia({ prefix: "/docker" }).ws(
 
     close(socket, code, reason) {
       logger.info(`Closing SplitStream and WebSocket (${socket.id})`);
-      const wasOpen = (socket as any).isOpen;
-      (socket as any).isOpen = false;
+      const wasOpen = (socket as unknown as ExtendedWebSocket).isOpen;
+      (socket as unknown as ExtendedWebSocket).isOpen = false;
 
       // Immediate heartbeat cleanup
       clearInterval((socket as any).heartbeat);
 
       // Force-close streams using destructor pattern
-      const streams: streams[] = (socket as any).streams || [];
+      const streams: streams[] = (socket as unknown as ExtendedWebSocket).streams || [];
       streams.forEach(({ statsStream, splitStream }) => {
         try {
           // Immediate pipeline breakdown

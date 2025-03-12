@@ -460,8 +460,9 @@ export const dbFunctions = {
       )
       VALUES(?, ?, ?, ?, ?, ?, ?, ?);
     `);
+
     const data = stmt.run(
-      (stack_config.name as any), // I dont fucking know bruh
+      stack_config.name,
       stack_config.version,
       stack_config.custom,
       stack_config.source,
@@ -533,7 +534,7 @@ export const dbFunctions = {
       stack_config.stack_prefix,
       stack_config.automatic_reboot_on_error,
       stack_config.image_updates,
-      (stack_config.name as any)  // Bruh what is this :sob:
+      stack_config.name
     );
 
     const duration = Date.now() - startTime;

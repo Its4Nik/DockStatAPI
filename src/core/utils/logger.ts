@@ -54,6 +54,7 @@ export const logger = createLogger({
     format.timestamp({ format: "DD/MM HH:mm:ss" }),
     fileLineFormat(),
     format.printf(({ timestamp, level, message, file, line }) => {
+
       const levelColors: Record<string, ChalkInstance> = {
         error: chalk.red.bold,
         warn: chalk.yellow.bold,
@@ -77,21 +78,6 @@ export const logger = createLogger({
       const coloredLevel = (levelColors[level] || chalk.white)(paddedLevel);
       const coloredContext = chalk.cyan(`${file as string}:${line as number}`);
       const coloredTimestamp = chalk.yellow(timestamp);
-      const ansiRegex = /\x1B\[[0-?9;]*[mG]/g;
-
-      try {
-        dbFunctions.addLogEntry(
-          (level as string).replace(ansiRegex, ''),
-          (message as string).replace(ansiRegex, ''),
-          (file as string).replace(ansiRegex, ''),
-          line as number
-        );
-      } catch (error) {
-        // Use console.error to avoid recursive logging
-        console.error(`Error inserting log into DB: ${String(error)}`);
-        console.error("Aborting due to risk of recursion!")
-        process.abort()
-      }
 
       if (process.env.NODE_ENV !== "dev") {
         return `${coloredLevel} [ ${coloredTimestamp} ] - ${chalk.gray(
@@ -105,6 +91,21 @@ export const logger = createLogger({
         message as string,
         prefixLength
       );
+      const ansiRegex = /\x1B\[[0-?9;]*[mG]/g;
+
+      try {
+        dbFunctions.addLogEntry(
+          (level as string).replace(ansiRegex, ''),
+          (message as string).replace(ansiRegex, ''),
+          (file as string).replace(ansiRegex, ''),
+          line as number
+        );
+      } catch (error) {
+        // Use console.error to avoid recursive logging
+        console.error(`Error inserting log into DB: ${String(error)}`);
+        process.abort()
+      }
+
       return `${coloredLevel} [ ${coloredTimestamp} ] - ${formattedMessage} - [ ${coloredContext} ]`;
     })
   ),

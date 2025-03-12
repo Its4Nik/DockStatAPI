@@ -1,3 +1,4 @@
+import { executeDbOperation } from "./helper";
 import Database from "bun:sqlite";
 import { logger } from "~/core/utils/logger";
 import { relayController } from "~/core/docker/relay-controller";
@@ -111,39 +112,42 @@ export const dbFunctions = {
   },
 
   addDockerHost(hostId: string, url: string, secure: boolean) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Adding Docker Host ⏳")
-    if (
-      typeof hostId !== "string" ||
-      typeof url !== "string" ||
-      typeof secure !== "boolean"
-    ) {
-      logger.crit("Invalid parameter types for addDockerHost");
-      throw new TypeError("Invalid parameter types for addDockerHost");
-    }
-
-    const stmt = db.prepare(`
+    return executeDbOperation(
+      "Add Docker Host",
+      () => {
+        const stmt = db.prepare(`
           INSERT INTO docker_hosts (name, url, secure)
           VALUES (?, ?, ?)
         `);
-    const data = stmt.run(hostId, url, secure);
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Adding Docker Host ✔️  (${duration}ms)`);
-    return data
+        return stmt.run(hostId, url, secure);
+      },
+      () => {
+        if (
+          typeof hostId !== "string" ||
+          typeof url !== "string" ||
+          typeof secure !== "boolean"
+        ) {
+          logger.error("Invalid parameter types for addDockerHost");
+          throw new TypeError("Invalid parameter types for addDockerHost");
+        }
+      }
+    );
   },
 
   getDockerHosts(): DockerHost[] {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Getting Docker Host ⏳")
-    const stmt = db.prepare(`
-      SELECT name, url, secure
-      FROM docker_hosts
-      ORDER BY name DESC
-    `);
-    const data = stmt.all();
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Getting Docker Host ✔️  (${duration}ms)`);
-    return data as DockerHost[];
+    return executeDbOperation(
+      "Get Docker Hosts",
+      () => {
+        const stmt = db.prepare(`
+          SELECT name, url, secure
+          FROM docker_hosts
+          ORDER BY name DESC
+        `);
+        const data = stmt.all();
+        return data as DockerHost[];
+      },
+      () => { }
+    );
   },
 
   addLogEntry: (
@@ -170,177 +174,192 @@ export const dbFunctions = {
   },
 
   getAllLogs() {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Getting all Logs ⏳")
-    const stmt = db.prepare(`
+    return executeDbOperation(
+      "Get All Logs",
+      () => {
+        const stmt = db.prepare(`
           SELECT timestamp, level, message, file, line
           FROM backend_log_entries
           ORDER BY timestamp DESC
         `);
-    const data = stmt.all();
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Getting all Logs ✔️  (${duration}ms)`);
-    return data
+        const data = stmt.all();
+        return data;
+      },
+      () => { }
+    );
   },
 
   getLogsByLevel(level: string) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Getting level-logs ⏳")
-    if (typeof level !== "string") {
-      logger.crit("Level parameter must be a string");
-      throw new TypeError("Level parameter must be a string");
-    }
-
-    const stmt = db.prepare(`
+    return executeDbOperation(
+      "Get Logs By Level",
+      () => {
+        const stmt = db.prepare(`
           SELECT timestamp, level, message, file, line
           FROM backend_log_entries
           WHERE level = ?
           ORDER BY timestamp DESC
         `);
-    const data = stmt.all(level);
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Getting level-logs ✔️  (${duration}ms)`);
-    return data
+        const data = stmt.all(level);
+        return data;
+      },
+      () => {
+        if (typeof level !== "string") {
+          logger.error("Level parameter must be a string");
+          throw new TypeError("Level parameter must be a string");
+        }
+      }
+    );
   },
 
   updateDockerHost(name: string, url: string, secure: boolean) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Updating Docker Host ⏳")
-    if (
-      typeof name !== "string" ||
-      typeof url !== "string" ||
-      typeof secure !== "boolean"
-    ) {
-      logger.crit("Invalid parameter types for updateDockerHost");
-      throw new TypeError("Invalid parameter types for updateDockerHost");
-    }
-
-    const stmt = db.prepare(`
-        UPDATE docker_hosts
-        SET url = ?, secure = ?
-        WHERE name = ?
-      `);
-    const data = stmt.run(url, secure, name);
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Updating Docker Host ✔️  (${duration}ms)`);
-    return data
+    return executeDbOperation(
+      "Update Docker Host",
+      () => {
+        const stmt = db.prepare(`
+          UPDATE docker_hosts
+          SET url = ?, secure = ?
+          WHERE name = ?
+        `);
+        const data = stmt.run(url, secure, name);
+        return data;
+      },
+      () => {
+        if (
+          typeof name !== "string" ||
+          typeof url !== "string" ||
+          typeof secure !== "boolean"
+        ) {
+          logger.error("Invalid parameter types for updateDockerHost");
+          throw new TypeError("Invalid parameter types for updateDockerHost");
+        }
+      }
+    );
   },
 
   deleteDockerHost(name: string) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Deleting Docker Host ⏳")
-    if (typeof name !== "string") {
-      logger.crit("Invalid parameter type for deleteDockerHost");
-      throw new TypeError("Name parameter must be a string");
-    }
-
-    const stmt = db.prepare(`
-        DELETE FROM docker_hosts
-        WHERE name = ?
-      `);
-    const data = stmt.run(name);
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Deleting Docker Host ✔️  (${duration}ms)`);
-    return data
+    return executeDbOperation(
+      "Delete Docker Host",
+      () => {
+        const stmt = db.prepare(`
+          DELETE FROM docker_hosts
+          WHERE name = ?
+        `);
+        const data = stmt.run(name);
+        return data;
+      },
+      () => {
+        if (typeof name !== "string") {
+          logger.error("Invalid parameter type for deleteDockerHost");
+          throw new TypeError("Name parameter must be a string");
+        }
+      }
+    );
   },
 
   clearAllLogs() {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Clearing all Logs ⏳")
-    const stmt = db.prepare(`
-        DELETE FROM backend_log_entries
-      `);
-    const data = stmt.run();
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Clearing all Logs ✔️  (${duration}ms)`);
-    return data
+    return executeDbOperation(
+      "Clear All Logs",
+      () => {
+        const stmt = db.prepare(`
+          DELETE FROM backend_log_entries
+        `);
+        const data = stmt.run();
+        return data;
+      },
+      () => { }
+    );
   },
 
   clearLogsByLevel(level: string) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Clearing all logs by level ⏳")
-    if (typeof level !== "string") {
-      logger.crit("Invalid parameter type for clearLogsByLevel");
-      throw new TypeError("Level parameter must be a string");
-    }
-
-    const stmt = db.prepare(`
-        DELETE FROM backend_log_entries
-        WHERE level = ?
-      `);
-    const data = stmt.run(level);
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Clearing all logs by level ✔️  (${duration}ms)`);
-    return data
+    return executeDbOperation(
+      "Clear Logs By Level",
+      () => {
+        const stmt = db.prepare(`
+          DELETE FROM backend_log_entries
+          WHERE level = ?
+        `);
+        const data = stmt.run(level);
+        return data;
+      },
+      () => {
+        if (typeof level !== "string") {
+          logger.error("Invalid parameter type for clearLogsByLevel");
+          throw new TypeError("Level parameter must be a string");
+        }
+      }
+    );
   },
 
   updateConfig(
     polling_rate: number,
     fetching_interval: number,
-    keep_data_for: number,
+    keep_data_for: number
   ) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Updating config ⏳")
-    if (
-      typeof polling_rate !== "number" ||
-      typeof fetching_interval !== "number" ||
-      typeof keep_data_for !== "number"
-    ) {
-      logger.crit("Invalid parameter types for updateConfig");
-      throw new TypeError("Invalid parameter types for updateConfig");
-    }
-
-    const stmt = db.prepare(`
-      UPDATE config
-      SET polling_rate = ?,
-          fetching_interval = ?,
-          keep_data_for = ?
-    `);
-
-    const data = stmt.run(polling_rate, fetching_interval, keep_data_for);
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Updating config ✔️  (${duration}ms)`);
-    return data
+    return executeDbOperation(
+      "Update Config",
+      () => {
+        const stmt = db.prepare(`
+          UPDATE config
+          SET polling_rate = ?,
+              fetching_interval = ?,
+              keep_data_for = ?
+        `);
+        const data = stmt.run(polling_rate, fetching_interval, keep_data_for);
+        return data;
+      },
+      () => {
+        if (
+          typeof polling_rate !== "number" ||
+          typeof fetching_interval !== "number" ||
+          typeof keep_data_for !== "number"
+        ) {
+          logger.error("Invalid parameter types for updateConfig");
+          throw new TypeError("Invalid parameter types for updateConfig");
+        }
+      }
+    );
   },
 
   getConfig() {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Getting config ⏳")
-    const stmt = db.prepare(`
-        SELECT polling_rate, keep_data_for, fetching_interval
-        FROM config
-      `);
-
-    const data = stmt.all();
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Getting config ✔️  (${duration}ms)`);
-    return data
+    return executeDbOperation(
+      "Get Config",
+      () => {
+        const stmt = db.prepare(`
+          SELECT polling_rate, keep_data_for, fetching_interval
+          FROM config
+        `);
+        const data = stmt.all();
+        return data;
+      },
+      () => { }
+    );
   },
 
   deleteOldData(days: number) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Deleting old data ⏳")
-    if (typeof days !== "number") {
-      logger.crit("Invalid parameter type for deleteOldData");
-      throw new TypeError("Days parameter must be a number");
-    }
+    return executeDbOperation(
+      "Delete Old Data",
+      () => {
+        const deleteContainerStmt = db.prepare(`
+          DELETE FROM container_stats
+          WHERE timestamp < datetime('now', '-' || ? || ' days')
+        `);
+        deleteContainerStmt.run(days);
 
-    const deleteContainerStmt = db.prepare(`
-        DELETE FROM container_stats
-        WHERE timestamp < datetime('now', '-' || ? || ' days')
-      `);
-    deleteContainerStmt.run(days);
-
-    const deleteLogsStmt = db.prepare(`
-        DELETE FROM backend_log_entries
-        WHERE timestamp < datetime('now', '-' || ? || ' days')
-      `);
-    deleteLogsStmt.run(days);
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Deleting old data ✔️  (${duration}ms)`);
+        const deleteLogsStmt = db.prepare(`
+          DELETE FROM backend_log_entries
+          WHERE timestamp < datetime('now', '-' || ? || ' days')
+        `);
+        deleteLogsStmt.run(days);
+      },
+      () => {
+        if (typeof days !== "number") {
+          logger.error("Invalid parameter type for deleteOldData");
+          throw new TypeError("Days parameter must be a number");
+        }
+      }
+    );
   },
 
-  // Stats:
   addContainerStats(
     id: string,
     hostId: string,
@@ -349,197 +368,198 @@ export const dbFunctions = {
     status: string,
     state: string,
     cpu_usage: number,
-    memory_usage: number,
+    memory_usage: number
   ) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Adding container statistics ⏳")
-    if (
-      typeof id !== "string" ||
-      typeof hostId !== "string" ||
-      typeof name !== "string" ||
-      typeof image !== "string" ||
-      typeof status !== "string" ||
-      typeof state !== "string" ||
-      typeof cpu_usage !== "number" ||
-      typeof memory_usage !== "number"
-    ) {
-      logger.crit("Invalid parameter types for addContainerStats");
-      throw new TypeError("Invalid parameter types for addContainerStats");
-    }
-
-    const stmt = db.prepare(`
-      INSERT INTO container_stats (id, hostId, name, image, status, state, cpu_usage, memory_usage)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const data = stmt.run(
-      id,
-      hostId,
-      name,
-      image,
-      status,
-      state,
-      cpu_usage,
-      memory_usage,
+    return executeDbOperation(
+      "Add Container Stats",
+      () => {
+        const stmt = db.prepare(`
+          INSERT INTO container_stats (id, hostId, name, image, status, state, cpu_usage, memory_usage)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        const data = stmt.run(
+          id,
+          hostId,
+          name,
+          image,
+          status,
+          state,
+          cpu_usage,
+          memory_usage
+        );
+        return data;
+      },
+      () => {
+        if (
+          typeof id !== "string" ||
+          typeof hostId !== "string" ||
+          typeof name !== "string" ||
+          typeof image !== "string" ||
+          typeof status !== "string" ||
+          typeof state !== "string" ||
+          typeof cpu_usage !== "number" ||
+          typeof memory_usage !== "number"
+        ) {
+          logger.error("Invalid parameter types for addContainerStats");
+          throw new TypeError("Invalid parameter types for addContainerStats");
+        }
+      }
     );
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Adding container statistics ✔️  (${duration}ms)`);
-    return data
   },
 
   updateHostStats(stats: HostStats) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Update Host Stats ⏳")
-    const labelsJson = JSON.stringify(stats.labels);
-    const stmt = db.prepare(`
-      INSERT INTO host_stats (
-        hostId,
-        dockerVersion,
-        apiVersion,
-        os,
-        architecture,
-        totalMemory,
-        totalCPU,
-        labels,
-        containers,
-        containersRunning,
-        containersStopped,
-        containersPaused,
-        images
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(hostId) DO UPDATE SET
-        dockerVersion = excluded.dockerVersion,
-        apiVersion = excluded.apiVersion,
-        os = excluded.os,
-        architecture = excluded.architecture,
-        totalMemory = excluded.totalMemory,
-        totalCPU = excluded.totalCPU,
-        labels = excluded.labels,
-        containers = excluded.containers,
-        containersRunning = excluded.containersRunning,
-        containersStopped = excluded.containersStopped,
-        containersPaused = excluded.containersPaused,
-        images = excluded.images;
-    `);
-    const data = stmt.run(
-      stats.hostId,
-      stats.dockerVersion,
-      stats.apiVersion,
-      stats.os,
-      stats.architecture,
-      stats.totalMemory,
-      stats.totalCPU,
-      labelsJson,
-      stats.containers,
-      stats.containersRunning,
-      stats.containersStopped,
-      stats.containersPaused,
-      stats.images,
+    return executeDbOperation(
+      "Update Host Stats",
+      () => {
+        const labelsJson = JSON.stringify(stats.labels);
+        const stmt = db.prepare(`
+          INSERT INTO host_stats (
+            hostId,
+            dockerVersion,
+            apiVersion,
+            os,
+            architecture,
+            totalMemory,
+            totalCPU,
+            labels,
+            containers,
+            containersRunning,
+            containersStopped,
+            containersPaused,
+            images
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(hostId) DO UPDATE SET
+            dockerVersion = excluded.dockerVersion,
+            apiVersion = excluded.apiVersion,
+            os = excluded.os,
+            architecture = excluded.architecture,
+            totalMemory = excluded.totalMemory,
+            totalCPU = excluded.totalCPU,
+            labels = excluded.labels,
+            containers = excluded.containers,
+            containersRunning = excluded.containersRunning,
+            containersStopped = excluded.containersStopped,
+            containersPaused = excluded.containersPaused,
+            images = excluded.images;
+        `);
+        const data = stmt.run(
+          stats.hostId,
+          stats.dockerVersion,
+          stats.apiVersion,
+          stats.os,
+          stats.architecture,
+          stats.totalMemory,
+          stats.totalCPU,
+          labelsJson,
+          stats.containers,
+          stats.containersRunning,
+          stats.containersStopped,
+          stats.containersPaused,
+          stats.images
+        );
+        return data;
+      },
+      () => { }
     );
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Update Host stats ✔️  (${duration}ms)`);
-    return data
   },
 
-  // Stacks:
-  // This is the stack config which will be saved in the database, the "real" docker-compose can be found in the designated folder
   addStack(stack_config: stacks_config) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Add Stack config ⏳")
-
-    const stmt = db.prepare(`
-      INSERT INTO stacks_config (
-        name,
-        version,
-        custom,
-        source,
-        container_count,
-        stack_prefix,
-        automatic_reboot_on_error,
-        image_updates
-      )
-      VALUES(?, ?, ?, ?, ?, ?, ?, ?);
-    `);
-
-    const data = stmt.run(
-      stack_config.name,
-      stack_config.version,
-      stack_config.custom,
-      stack_config.source,
-      stack_config.container_count,
-      stack_config.stack_prefix,
-      stack_config.automatic_reboot_on_error,
-      stack_config.image_updates
+    return executeDbOperation(
+      "Add Stack Config",
+      () => {
+        const stmt = db.prepare(`
+          INSERT INTO stacks_config (
+            name,
+            version,
+            custom,
+            source,
+            container_count,
+            stack_prefix,
+            automatic_reboot_on_error,
+            image_updates
+          )
+          VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        const data = stmt.run(
+          stack_config.name,
+          stack_config.version,
+          stack_config.custom,
+          stack_config.source,
+          stack_config.container_count,
+          stack_config.stack_prefix,
+          stack_config.automatic_reboot_on_error,
+          stack_config.image_updates
+        );
+        relayController.stackAdded();
+        return data;
+      },
+      () => { }
     );
-
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Add Stack config ✔️  (${duration}ms)`);
-    relayController.stackAdded();
-    return data;
   },
 
   getStacks() {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Get Stack config ⏳")
-
-    const stmt = db.prepare(`
+    return executeDbOperation(
+      "Get Stacks",
+      () => {
+        const stmt = db.prepare(`
           SELECT name, version, custom, source, container_count, stack_prefix, automatic_reboot_on_error, image_updates
           FROM stacks_config
           ORDER BY name DESC
         `);
-    const data = stmt.all();
-
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Get Stack config ✔️  (${duration}ms)`);
-    return data;
+        const data = stmt.all();
+        return data;
+      },
+      () => { }
+    );
   },
 
   deleteStack(name: string) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Delete Stack config ⏳");
-
-    const stmt = db.prepare(`
-    DELETE FROM stacks_config
-    WHERE name = ?;
-  `);
-    const data = stmt.run(name);
-
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Delete Stack config ✔️  (${duration}ms)`);
-    relayController.stackDeleted();
-    return data;
+    return executeDbOperation(
+      "Delete Stack",
+      () => {
+        const stmt = db.prepare(`
+          DELETE FROM stacks_config
+          WHERE name = ?;
+        `);
+        const data = stmt.run(name);
+        relayController.stackDeleted();
+        return data;
+      },
+      () => { }
+    );
   },
 
   updateStack(stack_config: stacks_config) {
-    const startTime = Date.now();
-    logger.debug("__task__ __db__ Update Stack config ⏳");
-
-    const stmt = db.prepare(`
-    UPDATE stacks_config
-    SET
-      version = ?,
-      custom = ?,
-      source = ?,
-      container_count = ?,
-      stack_prefix = ?,
-      automatic_reboot_on_error = ?,
-      image_updates = ?
-    WHERE name = ?;
-  `);
-    const data = stmt.run(
-      stack_config.version,
-      stack_config.custom,
-      stack_config.source,
-      stack_config.container_count,
-      stack_config.stack_prefix,
-      stack_config.automatic_reboot_on_error,
-      stack_config.image_updates,
-      stack_config.name
+    return executeDbOperation(
+      "Update Stack",
+      () => {
+        const stmt = db.prepare(`
+          UPDATE stacks_config
+          SET
+            version = ?,
+            custom = ?,
+            source = ?,
+            container_count = ?,
+            stack_prefix = ?,
+            automatic_reboot_on_error = ?,
+            image_updates = ?
+          WHERE name = ?;
+        `);
+        const data = stmt.run(
+          stack_config.version,
+          stack_config.custom,
+          stack_config.source,
+          stack_config.container_count,
+          stack_config.stack_prefix,
+          stack_config.automatic_reboot_on_error,
+          stack_config.image_updates,
+          stack_config.name
+        );
+        relayController.stackUpdated();
+        return data;
+      },
+      () => { }
     );
-
-    const duration = Date.now() - startTime;
-    logger.debug(`__task__ __db__ Update Stack config ✔️  (${duration}ms)`);
-    relayController.stackUpdated();
-    return data;
   }
 };

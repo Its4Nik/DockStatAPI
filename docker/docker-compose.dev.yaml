@@ -1,35 +1,8 @@
+name: "DockStatAPI - Dev"
 services:
-  test-socket-proxy:
+  socket-proxy:
+    container_name: Socket-Proxy
     image: lscr.io/linuxserver/socket-proxy:latest
-    container_name: test-socket-proxy
-    environment:
-      - ALLOW_START=1 #optional
-      - ALLOW_STOP=1 #optional
-      - ALLOW_RESTARTS=1 #optional
-      - AUTH=0 #optional
-      - BUILD=0 #optional
-      - COMMIT=0 #optional
-      - CONFIGS=0 #optional
-      - CONTAINERS=1 #optional
-      - DISABLE_IPV6=0 #optional
-      - DISTRIBUTION=0 #optional
-      - EVENTS=1 #optional
-      - EXEC=0 #optional
-      - IMAGES=0 #optional
-      - INFO=1 #optional
-      - NETWORKS=1 #optional
-      - NODES=1 #optional
-      - PING=1 #optional
-      - POST=0 #optional
-      - PLUGINS=0 #optional
-      - SECRETS=0 #optional
-      - SERVICES=0 #optional
-      - SESSION=0 #optional
-      - SWARM=0 #optional
-      - SYSTEM=0 #optional
-      - TASKS=0 #optional
-      - VERSION=1 #optional
-      - VOLUMES=0 #optional
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
@@ -38,3 +11,42 @@ services:
       - /run
     ports:
       - 2375:2375
+    environment:
+      - ALLOW_START=1 #optional
+      - ALLOW_STOP=1 #optional
+      - ALLOW_RESTARTS=1 #optional
+      - AUTH=1 #optional
+      - BUILD=1 #optional
+      - COMMIT=1 #optional
+      - CONFIGS=1 #optional
+      - CONTAINERS=1 #optional
+      - DISABLE_IPV6=1 #optional
+      - DISTRIBUTION=1 #optional
+      - EVENTS=1 #optional
+      - EXEC=1 #optional
+      - IMAGES=1 #optional
+      - INFO=1 #optional
+      - NETWORKS=1 #optional
+      - NODES=1 #optional
+      - PING=1 #optional
+      - PLUGINS=1 #optional
+      - POST=1 #optional
+      - PROXY_READ_TIMEOUT=240 #optional
+      - SECRETS=1 #optional
+      - SERVICES=1 #optional
+      - SESSION=1 #optional
+      - SWARM=1 #optional
+      - SYSTEM=1 #optional
+      - TASKS=1 #optional
+      - VERSION=1 #optional
+      - VOLUMES=1 #optional
+
+  sqlite-web:
+    container_name: SQLite-web
+    image: ghcr.io/coleifer/sqlite-web:latest
+    ports:
+      - 8080:8080
+    volumes:
+      - ../:/data:ro
+    environment:
+      - SQLITE_DATABASE=dockstatapi.db

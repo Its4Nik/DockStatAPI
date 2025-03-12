@@ -1,75 +1,72 @@
-# Deprecation Warning!
-# V2 is abondend, since there where to many issues in the codebase!
-# Please see v3 (next commit from this one onwards, all other branches which are not based on bun will be deleted!)
+# DockStat API v3
 
-# DockStatAPI v2
+! WIP Documentation !
 
-![Dockstat Logo](.github/DockStat.png)
+## Usage
 
-<div align="center">
+The DockStat API provides the following endpoints:
 
-# Pipelines
+### Docker Containers
+- `GET /docker/containers`: Retrieve statistics for all containers across all configured Docker hosts.
 
-[![Docker Image CI](https://img.shields.io/github/actions/workflow/status/Its4Nik/dockstatapi/build-image.yml?branch=main&label=Docker%20Image%20CI&style=for-the-badge&logo=docker)](https://github.com/Its4Nik/dockstatapi/actions/workflows/build-image.yml)
-[![Validation](https://img.shields.io/github/actions/workflow/status/Its4Nik/dockstatapi/validation.yml?branch=dev&label=Validation&style=for-the-badge&logo=checkmarx)](https://github.com/Its4Nik/dockstatapi/actions/workflows/validation.yml)
+### Docker Hosts
+- `GET /docker/hosts/:id`: Retrieve configuration and statistics for a specific Docker host.
 
-</div>
+### Docker Configuration
+- `POST /docker-config/add-host`: Add a new Docker host.
+- `POST /docker-config/update-host`: Update an existing Docker host.
+- `GET /docker-config/hosts`: Retrieve a list of all configured Docker hosts.
 
-This specific branch contains the currently WIP **DockStatAPI-v2**, this update will bring major breaking changes so please be careful.
-With this new release a couple of extra features (compared to v1) are going to be available.
+### API Configuration
+- `GET /config/get`: Retrieve the current API configuration.
+- `POST /config/update`: Update the API configuration.
 
-### Feature List:
+### Logs
+- `GET /logs`: Retrieve all backend logs.
+- `GET /logs/:level`: Retrieve logs filtered by log level.
+- `DELETE /logs`: Clear all backend logs.
+- `DELETE /logs/:level`: Clear logs by log level.
 
-- Swagger API Documentation
-- Database (Keeps data for 24 hours max)
-- Advanced authentication using hashes and salt
-- Custom TypeScript/JavaScript notification modules! (Easy to add and configure!)
-- `http` API to configure the backend
-- Multi-arch docker builds (using buildx github action)
-- Advanced security through middlewares: rate-limiting and authentication
-- Multi Arch Docker builds through docker buildx
-- High Availability using single master and unlimited worker nodes!
-- Dynamically created Graphs
+### Websocket
+- `WS(S) /docker/stats`: Retrieve the current API configuration.
 
-# 🔗 DockStatAPI v2 Documentation
+## API
 
-_⚠️ = Deprecation warning_
+The DockStat API exposes the following endpoints:
 
-- [Introduction](https://outline.itsnik.de/s/dockstat)
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| `/docker/containers` | `GET` | Retrieve statistics for all containers across all configured Docker hosts. |
+| `/docker/hosts/:id` | `GET` | Retrieve configuration and statistics for a specific Docker host. |
+| `/docker-config/add-host` | `POST` | Add a new Docker host. |
+| `/docker-config/update-host` | `POST` | Update an existing Docker host. |
+| `/docker-config/hosts` | `GET` | Retrieve a list of all configured Docker hosts. |
+| `/config/get` | `GET` | Retrieve the current API configuration. |
+| `/config/update` | `POST` | Update the API configuration. |
+| `/logs` | `GET` | Retrieve all backend logs. |
+| `/logs/:level` | `GET` | Retrieve logs filtered by log level. |
+| `/logs` | `DELETE` | Clear all backend logs. |
+| `/logs/:level` | `DELETE` | Clear logs by log level. |
 
-  - [DockstatAPI v2](https://outline.itsnik.de/s/dockstat/doc/dockstatapi-v2-XRMDKRqMIg)
+## Contributing
 
-    - [API reference](https://outline.itsnik.de/s/dockstat/doc/api-reference-1PTxqx1MQ6)
-    - [How dependency graphs are made](https://outline.itsnik.de/s/dockstat/doc/how-the-dependecy-graphs-are-made-svuZbEHH9g)
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes and commit them.
+4. Push your branch to your forked repository.
+5. Submit a pull request to the main repository.
 
-  - [DockStat v1](https://outline.itsnik.de/s/dockstat/doc/dockstat-v1-zVaFS4zROI)
+## License
 
-    - [⚠️ Customisation](https://outline.itsnik.de/s/dockstat/doc/customization-PiBz4OpQIZ)
-      - [⚠️ Themes](https://outline.itsnik.de/s/dockstat/doc/themes-BFhN6ZBbYx)
-    - [⚠️ Installation](https://outline.itsnik.de/s/dockstat/doc/installation-DaO99bB86q)
+This project is licensed under the CC BY-NC 4.0 License.
+![cc-by-nc-image](https://licensebuttons.net/l/by-nc/4.0/88x31.png)
 
-  - [⚠️ DockStatAPI v1](https://outline.itsnik.de/s/dockstat/doc/dockstatapi-v1-jLcVCfPNmS)
-    - [⚠️ Integrations](https://outline.itsnik.de/s/dockstat/doc/integrations-Agq1oL6HxF)
-    - [⚠️ Backend API reference](https://outline.itsnik.de/s/dockstat/doc/backend-api-reference-YzcBbDvY33)
+## Testing
 
-# Dependencies
-
-Please see [CREDITS.md](./CREDITS.md).
-
-To create the credits file use: `npm run license`
-
-Or if you want it as a pre-commit hook create this file:
-
-```bash
-#!/bin/bash
-# .git/hooks/pre-commit
-
-npm run license
+To run the tests, execute the following command:
+(Currently no tests configured!)
+```
+bun test
 ```
 
-# DockStat(APIs) goals
-
-DockStack tries to be a lightweigh and more "dashboard" like then [portainer](https://github.com/portainer/portainer), [cAdvisor](https://github.com/google/cadvisor), [dockge](https://github.com/louislam/dockge), ...
-I also try to add some "extensions", like in V1 with [🥤cup](https://github.com/sergi0g/cup).
-Everything is configured through a backend with Swagger documentation, so that you can follow the code and understand the new v2 frontend better!
-DockStat is mainly used for teaching [myself](https://github.com/Its4Nik) more about TypeScript, APIs and backend development!
+This will run the test suite and report the results.

@@ -20,10 +20,20 @@ jobs:
           bun add dependency-cruiser
           sudo apt-get install -y graphviz
 
-      - name: Generate SVG Dependency Graph
+      - name: Generate Mermaid Dependency Graph
         run: |
-          bun run dependency-cruiser --output-type ddot src/index.ts --no-config -x node_modules --ts-pre-compilation-deps --ts-config tsconfig.json | dot -T svg > dependency-graph.svg
-          echo "SVG graph generated at docs/dependency-graph.svg"
+          bun run dependency-cruiser --output-type mermaid src/index.ts --output-to dependency-graph.mmd --no-config -x node_modules --ts-pre-compilation-deps --ts-config tsconfig.json
+          echo "Mermaid graph generated at dependency-graph.mmd"
+
+      - name: Convert to ELK Layout
+        run: |
+          bash ./.github/scripts/dep-graph.sh
+
+      - name: Generate Dependency Graph (SVG)
+        run: |
+          bun run dependency-cruiser --output-type dot src/index.ts --output-to dependency-graph.dot --no-config -x node_modules --ts-pre-compilation-deps --ts-config tsconfig.json
+          dot -Tsvg dependency-graph.dot -o dependency-graph.svg
+          echo "SVG graph generated at dependency-graph.svg"
 
       - name: Commit and Push Changes
         uses: EndBug/add-and-commit@v9

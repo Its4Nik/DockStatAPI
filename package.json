@@ -20,6 +20,7 @@
     "clean:lin": "node -e \"process.exit(process.platform !== 'win32' ? 0 : 1)\" && rm -f dockstatapi.db* && echo 'success'"
   },
   "dependencies": {
+    "@elysiajs/server-timing": "^1.2.1",
     "@elysiajs/static": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
     "chalk": "^5.4.1",

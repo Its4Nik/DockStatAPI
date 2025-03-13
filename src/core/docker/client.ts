@@ -12,10 +12,16 @@ async function fileExists(path: string): Promise<boolean> {
 
 export const getDockerClient = (host: DockerHost): Docker => {
   try {
-    const inputUrl = host.url.includes("://") ? host.url : `${host.secure ? "https" : "http"}://${host.url}`;
+    const inputUrl = host.url.includes("://")
+      ? host.url
+      : `${host.secure ? "https" : "http"}://${host.url}`;
     const parsedUrl = new URL(inputUrl);
     const hostAddress = parsedUrl.hostname;
-    let port = parsedUrl.port ? parseInt(parsedUrl.port) : (host.secure ? 2376 : 2375);
+    let port = parsedUrl.port
+      ? parseInt(parsedUrl.port)
+      : host.secure
+        ? 2376
+        : 2375;
 
     if (isNaN(port) || port < 1 || port > 65535) {
       throw new Error("Invalid port number in Docker host URL");
@@ -42,20 +48,22 @@ export const stackClient = async (): Promise<Docker> => {
     }
 
     const docker = new Docker({
-      socketPath
+      socketPath,
     });
 
     const pingTimeout = 2000;
     await Promise.race([
       docker.ping(),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Ping timed out")), pingTimeout)
-      )
+        setTimeout(() => reject(new Error("Ping timed out")), pingTimeout),
+      ),
     ]);
 
     return docker;
   } catch (error) {
-    logger.error(`Could not create Docker client for "${socketPath}" - ${error}`);
+    logger.error(
+      `Could not create Docker client for "${socketPath}" - ${error}`,
+    );
     throw new Error("Failed to create Docker client for local Docker socket");
   }
 };

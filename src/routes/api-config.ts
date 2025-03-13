@@ -67,29 +67,30 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
       tags: ["Management"],
     },
   )
-  .get("/package", async ({ set }) => {
-    try {
-      logger.debug("Fetching package.json");
-      return {
-        version: version,
-        description: description,
-        license: license,
-        authorName: authorName,
-        authorEmail: authorEmail,
-        authorWebsite: authorWebsite,
-        contributors: contributors,
-        dependencies: dependencies,
-        devDependencies: devDependencies,
-      };
-
-    } catch (error) {
-      return responseHandler.error(
-        set,
-        error as string,
-        "Error while reading package.json",
-      );
-    }
-  },
+  .get(
+    "/package",
+    async ({ set }) => {
+      try {
+        logger.debug("Fetching package.json");
+        return {
+          version: version,
+          description: description,
+          license: license,
+          authorName: authorName,
+          authorEmail: authorEmail,
+          authorWebsite: authorWebsite,
+          contributors: contributors,
+          dependencies: dependencies,
+          devDependencies: devDependencies,
+        };
+      } catch (error) {
+        return responseHandler.error(
+          set,
+          error as string,
+          "Error while reading package.json",
+        );
+      }
+    },
     {
       tags: ["Management"],
     },

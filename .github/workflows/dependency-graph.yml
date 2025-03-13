@@ -20,14 +20,9 @@ jobs:
           bun add dependency-cruiser
           sudo apt-get install -y graphviz
 
-      - name: Generate Mermaid Diagram
-        run: |
-          bun run depcruise src --no-config --include-only "^src" --output-type mermaid > dependency-graph.mmd
-          echo "Mermaid diagram generated at dependency-graph.mmd"
-
       - name: Generate SVG Dependency Graph
         run: |
-          bun run depcruise src --no-config --include-only "^src" --output-type dot | dot -T svg > dependency-graph.svg
+          bun run dependency-cruiser --output-type ddot src/index.ts --no-config -x node_modules --ts-pre-compilation-deps --ts-config tsconfig.json | dot -T svg > dependency-graph.svg
           echo "SVG graph generated at docs/dependency-graph.svg"
 
       - name: Commit and Push Changes

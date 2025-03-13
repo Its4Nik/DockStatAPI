@@ -2,8 +2,7 @@
 
 mermaidContent="$(cat dependency-graph.mmd)"
 
-echo "
----
+echo "---
 config:
     flowchart:
         defaultRenderer: elk

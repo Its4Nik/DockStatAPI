@@ -41,6 +41,7 @@
     "@types/split2": "^4.2.3",
     "bun-types": "latest",
     "cross-env": "^7.0.3",
+    "dependency-cruiser": "^16.10.0",
     "knip": "^5.46.0",
     "typescript": "^5.8.2",
     "wrap-ansi": "^9.0.0"

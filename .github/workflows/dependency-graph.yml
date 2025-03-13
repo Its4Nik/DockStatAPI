@@ -13,23 +13,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependency-cruiser and graphviz
         run: |
-          npm install -g dependency-cruiser
+          bun add dependency-cruiser
           sudo apt-get install -y graphviz
 
       - name: Generate Mermaid Diagram
         run: |
-          npx depcruise src --no-config --include-only "^src" --output-type mermaid > dependency-graph.mmd
+          bun run depcruise src --no-config --include-only "^src" --output-type mermaid > dependency-graph.mmd
           echo "Mermaid diagram generated at dependency-graph.mmd"
 
       - name: Generate SVG Dependency Graph
         run: |
-          npx depcruise src --no-config --include-only "^src" --output-type dot | dot -T svg > dependency-graph.svg
+          bun run depcruise src --no-config --include-only "^src" --output-type dot | dot -T svg > dependency-graph.svg
           echo "SVG graph generated at docs/dependency-graph.svg"
 
       - name: Commit and Push Changes

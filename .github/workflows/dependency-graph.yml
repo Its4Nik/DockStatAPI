@@ -31,8 +31,8 @@ jobs:
 
       - name: Generate Dependency Graph (SVG)
         run: |
-          bun run dependency-cruiser --output-type archi src/index.ts --output-to dependency-graph.dot --no-config -x node_modules --ts-pre-compilation-deps --ts-config tsconfig.json
-          dot -Tsvg dependency-graph.dot -o dependency-graph.svg
+          bun run dependency-cruiser --output-type dot src/index.ts --output-to dependency-graph.dot --no-config -x node_modules --ts-pre-compilation-deps --ts-config tsconfig.json
+          dot -T svg -Gsplines=ortho dependency-graph.dot -o dependency-graph.svg
           echo "SVG graph generated at dependency-graph.svg"
 
       - name: Commit and Push Changes

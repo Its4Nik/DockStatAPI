@@ -24,12 +24,12 @@ jobs:
 
       - name: Generate Mermaid Diagram
         run: |
-          npx depcruise src --include-only "^src" --output-type mermaid > dependency-graph.mmd
+          npx depcruise src --no-config --include-only "^src" --output-type mermaid > dependency-graph.mmd
           echo "Mermaid diagram generated at dependency-graph.mmd"
 
       - name: Generate SVG Dependency Graph
         run: |
-          npx depcruise src --include-only "^src" --output-type dot | dot -T svg > dependency-graph.svg
+          npx depcruise src --no-config --include-only "^src" --output-type dot | dot -T svg > dependency-graph.svg
           echo "SVG graph generated at docs/dependency-graph.svg"
 
       - name: Commit and Push Changes

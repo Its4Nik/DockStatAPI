@@ -15,7 +15,7 @@ Docker monitoring API with real-time statistics, stack management, and plugin su
 - Plugin system for custom logic/notifications
 - Historical stats storage (SQLite)
 - Swagger API documentation
-- Web dashboard (WIP)
+- Web dashboard ([DockStat](https://github.com/its4nik/DockStat))
 
 ## Tech Stack
 

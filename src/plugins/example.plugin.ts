@@ -1,7 +1,6 @@
 import type { Plugin } from "~/typings/plugin";
 import type { ContainerInfo } from "~/typings/docker";
 import type { HostStats } from "~/typings/docker";
-import { logger } from "~/core/utils/logger";
 
 const ExamplePlugin: Plugin = {
   name: "Example Plugin",

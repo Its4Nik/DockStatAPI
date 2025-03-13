@@ -1,3 +1,4 @@
 *.db*
 /stacks
 /node_modules
+.test

@@ -12,6 +12,7 @@ import { apiConfigRoutes } from "~/routes/api-config";
 import { setSchedules } from "~/core/docker/scheduler";
 import { serverTiming } from "@elysiajs/server-timing";
 import staticPlugin from "@elysiajs/static";
+import trpcRouter from "~/core/trpc";
 
 console.log("");
 dbFunctions.init();
@@ -46,9 +47,10 @@ const DockStatAPI = new Elysia()
           },
         ],
       },
-    }),
+    })
   )
   .use(serverTiming())
+  .use(trpcRouter)
   .use(dockerRoutes)
   .use(dockerStatsRoutes)
   .use(backendLogs)
@@ -72,7 +74,10 @@ async function startServer() {
       console.log("----- [ ############## ]");
       logger.info(`DockStatAPI is running at http://${hostname}:${port}`);
       logger.info(
-        `Swagger API Documentation available at http://${hostname}:${port}/swagger`,
+        `Swagger API Documentation available at http://${hostname}:${port}/swagger`
+      );
+      logger.info(
+        `tRPC Endpoint available at: http://${hostname}:${port}/trpc`
       );
     });
   } catch (error) {

@@ -30,42 +30,37 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
         return responseHandler.error(
           set,
           "Error getting the DockStatAPI config",
-          error as string,
+          error as string
         );
       }
     },
     {
       tags: ["Management"],
-    },
+    }
   )
   .post(
     "/update",
     async ({ set, body }) => {
       try {
-        const { polling_rate, fetching_interval, keep_data_for } = body;
+        const { fetching_interval, keep_data_for } = body;
         set.headers["Content-Type"] = "application/json";
-        dbFunctions.updateConfig(
-          polling_rate,
-          fetching_interval,
-          keep_data_for,
-        );
+        dbFunctions.updateConfig(fetching_interval, keep_data_for);
         return responseHandler.ok(set, "Updated DockStatAPI config");
       } catch (error) {
         return responseHandler.error(
           set,
           "Error updating the DockStatAPI config",
-          error as string,
+          error as string
         );
       }
     },
     {
       body: t.Object({
-        polling_rate: t.Number(),
         fetching_interval: t.Number(),
         keep_data_for: t.Number(),
       }),
       tags: ["Management"],
-    },
+    }
   )
   .get(
     "/package",
@@ -87,11 +82,11 @@ export const apiConfigRoutes = new Elysia({ prefix: "/config" })
         return responseHandler.error(
           set,
           error as string,
-          "Error while reading package.json",
+          "Error while reading package.json"
         );
       }
     },
     {
       tags: ["Management"],
-    },
+    }
   );

@@ -12,7 +12,7 @@ export class PluginManager extends EventEmitter {
       logger.debug(`Registered plugin: ${plugin.name}`);
     } catch (error) {
       logger.error(
-        `Registering plugin ${plugin.name} failed: ${error as string}`,
+        `Registering plugin ${plugin.name} failed: ${error as string}`
       );
     }
   }
@@ -25,6 +25,12 @@ export class PluginManager extends EventEmitter {
   handleContainerStop(containerInfo: ContainerInfo) {
     this.plugins.forEach((plugin) => {
       plugin.onContainerStop?.(containerInfo);
+    });
+  }
+
+  handleContainerStart(containerInfo: ContainerInfo) {
+    this.plugins.forEach((plugin) => {
+      plugin.onContainerStart?.(containerInfo);
     });
   }
 

@@ -1,7 +1,6 @@
 import { executeDbOperation } from "./helper";
 import Database from "bun:sqlite";
 import { logger } from "~/core/utils/logger";
-import { relayController } from "~/core/docker/relay-controller";
 import type { DockerHost, HostStats } from "~/typings/docker";
 import type { stacks_config } from "~/typings/database";
 
@@ -66,7 +65,6 @@ export const dbFunctions = {
       );
 
       CREATE TABLE IF NOT EXISTS config (
-        polling_rate NUMBER,
         keep_data_for NUMBER,
         fetching_interval NUMBER
       );
@@ -76,7 +74,6 @@ export const dbFunctions = {
 
     /*
      * Default values:
-     * - Websocket polling interval 5 seconds
      * - Data retention value for the database (logs and container stats) 7 days
      * - Data fetcher for the Database: 5 minutes
      */
@@ -87,8 +84,8 @@ export const dbFunctions = {
       logger.debug("Initializing default config");
       const stmt = db.prepare(
         `
-        INSERT INTO config (polling_rate, keep_data_for, fetching_interval) VALUES (5, 7, 5)
-        `,
+        INSERT INTO config (keep_data_for, fetching_interval) VALUES (7, 5)
+        `
       );
       stmt.run();
     }
@@ -101,7 +98,7 @@ export const dbFunctions = {
       const stmt = db.prepare(
         `
         INSERT INTO docker_hosts (name, url, secure) VALUES (?, ?, ?)
-        `,
+        `
       );
       stmt.run("Localhost", "localhost:2375", false);
     }
@@ -129,7 +126,7 @@ export const dbFunctions = {
           logger.error("Invalid parameter types for addDockerHost");
           throw new TypeError("Invalid parameter types for addDockerHost");
         }
-      },
+      }
     );
   },
 
@@ -145,7 +142,7 @@ export const dbFunctions = {
         const data = stmt.all();
         return data as DockerHost[];
       },
-      () => {},
+      () => {}
     );
   },
 
@@ -153,7 +150,7 @@ export const dbFunctions = {
     level: string,
     message: string,
     file_name: string,
-    line: number,
+    line: number
   ) => {
     if (
       typeof level !== "string" ||
@@ -184,7 +181,7 @@ export const dbFunctions = {
         const data = stmt.all();
         return data;
       },
-      () => {},
+      () => {}
     );
   },
 
@@ -206,7 +203,7 @@ export const dbFunctions = {
           logger.error("Level parameter must be a string");
           throw new TypeError("Level parameter must be a string");
         }
-      },
+      }
     );
   },
 
@@ -231,7 +228,7 @@ export const dbFunctions = {
           logger.error("Invalid parameter types for updateDockerHost");
           throw new TypeError("Invalid parameter types for updateDockerHost");
         }
-      },
+      }
     );
   },
 
@@ -251,7 +248,7 @@ export const dbFunctions = {
           logger.error("Invalid parameter type for deleteDockerHost");
           throw new TypeError("Name parameter must be a string");
         }
-      },
+      }
     );
   },
 
@@ -265,7 +262,7 @@ export const dbFunctions = {
         const data = stmt.run();
         return data;
       },
-      () => {},
+      () => {}
     );
   },
 
@@ -285,37 +282,31 @@ export const dbFunctions = {
           logger.error("Invalid parameter type for clearLogsByLevel");
           throw new TypeError("Level parameter must be a string");
         }
-      },
+      }
     );
   },
 
-  updateConfig(
-    polling_rate: number,
-    fetching_interval: number,
-    keep_data_for: number,
-  ) {
+  updateConfig(fetching_interval: number, keep_data_for: number) {
     return executeDbOperation(
       "Update Config",
       () => {
         const stmt = db.prepare(`
           UPDATE config
-          SET polling_rate = ?,
-              fetching_interval = ?,
+          SET fetching_interval = ?,
               keep_data_for = ?
         `);
-        const data = stmt.run(polling_rate, fetching_interval, keep_data_for);
+        const data = stmt.run(fetching_interval, keep_data_for);
         return data;
       },
       () => {
         if (
-          typeof polling_rate !== "number" ||
           typeof fetching_interval !== "number" ||
           typeof keep_data_for !== "number"
         ) {
           logger.error("Invalid parameter types for updateConfig");
           throw new TypeError("Invalid parameter types for updateConfig");
         }
-      },
+      }
     );
   },
 
@@ -324,13 +315,13 @@ export const dbFunctions = {
       "Get Config",
       () => {
         const stmt = db.prepare(`
-          SELECT polling_rate, keep_data_for, fetching_interval
+          SELECT keep_data_for, fetching_interval
           FROM config
         `);
         const data = stmt.all();
         return data;
       },
-      () => {},
+      () => {}
     );
   },
 
@@ -355,7 +346,7 @@ export const dbFunctions = {
           logger.error("Invalid parameter type for deleteOldData");
           throw new TypeError("Days parameter must be a number");
         }
-      },
+      }
     );
   },
 
@@ -367,7 +358,7 @@ export const dbFunctions = {
     status: string,
     state: string,
     cpu_usage: number,
-    memory_usage: number,
+    memory_usage: number
   ) {
     return executeDbOperation(
       "Add Container Stats",
@@ -384,7 +375,7 @@ export const dbFunctions = {
           status,
           state,
           cpu_usage,
-          memory_usage,
+          memory_usage
         );
         return data;
       },
@@ -402,7 +393,7 @@ export const dbFunctions = {
           logger.error("Invalid parameter types for addContainerStats");
           throw new TypeError("Invalid parameter types for addContainerStats");
         }
-      },
+      }
     );
   },
 
@@ -455,11 +446,11 @@ export const dbFunctions = {
           stats.containersRunning,
           stats.containersStopped,
           stats.containersPaused,
-          stats.images,
+          stats.images
         );
         return data;
       },
-      () => {},
+      () => {}
     );
   },
 
@@ -488,12 +479,11 @@ export const dbFunctions = {
           stack_config.container_count,
           stack_config.stack_prefix,
           stack_config.automatic_reboot_on_error,
-          stack_config.image_updates,
+          stack_config.image_updates
         );
-        relayController.stackAdded();
         return data;
       },
-      () => {},
+      () => {}
     );
   },
 
@@ -509,7 +499,7 @@ export const dbFunctions = {
         const data = stmt.all();
         return data;
       },
-      () => {},
+      () => {}
     );
   },
 
@@ -522,10 +512,9 @@ export const dbFunctions = {
           WHERE name = ?;
         `);
         const data = stmt.run(name);
-        relayController.stackDeleted();
         return data;
       },
-      () => {},
+      () => {}
     );
   },
 
@@ -553,12 +542,11 @@ export const dbFunctions = {
           stack_config.stack_prefix,
           stack_config.automatic_reboot_on_error,
           stack_config.image_updates,
-          stack_config.name,
+          stack_config.name
         );
-        relayController.stackUpdated();
         return data;
       },
-      () => {},
+      () => {}
     );
   },
 };

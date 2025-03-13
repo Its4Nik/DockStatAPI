@@ -17,26 +17,32 @@
     "build": "bun build --target bun src/index.ts --outdir ./dist",
     "clean": "bun run clean:win || bun run clean:lin",
     "clean:win": "node -e \"process.exit(process.platform === 'win32' ? 0 : 1)\" && cmd /c del /Q dockstatapi.db* && echo 'success'",
-    "clean:lin": "node -e \"process.exit(process.platform !== 'win32' ? 0 : 1)\" && rm -f dockstatapi.db* && echo 'success'"
+    "clean:lin": "node -e \"process.exit(process.platform !== 'win32' ? 0 : 1)\" && rm -f dockstatapi.db* && echo 'success'",
+    "knip": "knip"
   },
   "dependencies": {
     "@elysiajs/server-timing": "^1.2.1",
     "@elysiajs/static": "^1.2.0",
     "@elysiajs/swagger": "^1.2.2",
+    "@elysiajs/trpc": "^1.1.0",
+    "@elysiajs/websocket": "^0.2.8",
+    "@trpc/server": "^10.45.2",
     "chalk": "^5.4.1",
     "docker-compose": "^1.1.1",
     "dockerode": "^4.0.4",
     "elysia": "latest",
     "split2": "^4.2.0",
     "winston": "^3.17.0",
-    "winston-transport": "^4.9.0",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@types/dockerode": "^3.3.34",
+    "@types/node": "^22.13.10",
     "@types/split2": "^4.2.3",
     "bun-types": "latest",
     "cross-env": "^7.0.3",
+    "knip": "^5.46.0",
+    "typescript": "^5.8.2",
     "wrap-ansi": "^9.0.0"
   },
   "module": "src/index.js",

@@ -7,10 +7,10 @@ interface backend_log_entries {
 }
 
 interface config {
-  polling_rate: number;
   keep_data_for: number;
   fetching_interval: number;
 }
+
 interface stacks_config {
   name: string;
   version: number;

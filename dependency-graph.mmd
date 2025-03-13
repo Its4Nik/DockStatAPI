@@ -1,0 +1,87 @@
+flowchart LR
+
+subgraph 0["src"]
+subgraph 1["core"]
+subgraph 2["database"]
+3["helper.ts"]
+6["repository.ts"]
+end
+subgraph 4["utils"]
+5["logger.ts"]
+E["change-me-checker.ts"]
+T["calculations.ts"]
+U["package-json.ts"]
+V["respone-handler.ts"]
+end
+subgraph 7["docker"]
+8["client.ts"]
+9["scheduler.ts"]
+A["store-container-stats.ts"]
+B["store-host-stats.ts"]
+end
+subgraph C["plugins"]
+D["loader.ts"]
+F["plugin-manager.ts"]
+G["plugin-actions.ts"]
+end
+subgraph H["stacks"]
+I["controller.ts"]
+end
+subgraph J["trpc"]
+K["index.ts"]
+L["router.ts"]
+subgraph M["procedures"]
+N["api-config.procedure.ts"]
+P["docker-manager.procedure.ts"]
+Q["docker-stats.procedure.ts"]
+R["logs.procedure.ts"]
+S["stacks.procedure.ts"]
+end
+O["trpc.ts"]
+end
+end
+W["index.ts"]
+subgraph X["routes"]
+Y["stacks.ts"]
+12["api-config.ts"]
+13["docker-manager.ts"]
+14["docker-stats.ts"]
+15["docker-websocket.ts"]
+16["logs.ts"]
+end
+subgraph Z["plugins"]
+10["example.plugin.ts"]
+11["telegram.plugin.ts"]
+end
+subgraph 17["typings"]
+18["database.ts"]
+19["docker-compose.ts"]
+1A["docker.ts"]
+1B["dockerode.ts"]
+1C["plugin.ts"]
+1D["websocket.ts"]
+end
+end
+3-->5
+5-->6
+6-->3
+D-->E
+D-->5
+D-->F
+F-->5
+G-->F
+I-->6
+I-->5
+K-->L
+L-->N
+L-->P
+L-->Q
+L-->R
+L-->S
+L-->O
+N-->O
+P-->O
+Q-->O
+R-->O
+S-->O
+W-->Y

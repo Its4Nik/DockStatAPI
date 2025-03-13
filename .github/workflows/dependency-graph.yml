@@ -11,27 +11,31 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install madge
-        run: npm install -g madge
+      - name: Install dependency-cruiser and graphviz
+        run: |
+          npm install -g dependency-cruiser
+          sudo apt-get install -y graphviz
 
-      - name: Generate Dependency Data
-        run: madge --json src/index.ts > dependencies.json
+      - name: Generate Mermaid Diagram
+        run: |
+          npx depcruise src --include-only "^src" --output-type mermaid > dependency-graph.mmd
+          echo "Mermaid diagram generated at dependency-graph.mmd"
 
-      - name: Generate Mermaid Markdown
-        run: node .github/scripts/generate-mermaid.js
+      - name: Generate SVG Dependency Graph
+        run: |
+          npx depcruise src --include-only "^src" --output-type dot | dot -T svg > dependency-graph.svg
+          echo "SVG graph generated at docs/dependency-graph.svg"
 
       - name: Commit and Push Changes
         uses: EndBug/add-and-commit@v9
         with:
-          add: "dependencies.md"
-          message: "CI/CD: Update dependency graph"
+          add: "docs/*"
+          message: "Update dependency graphs"
           committer_name: "GitHub Action"
           committer_email: "action@github.com"
